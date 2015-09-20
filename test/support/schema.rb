@@ -13,8 +13,16 @@ ProductType = GraphQL::ObjectType.define do
 
   field :variants do
     type types[!ProductVariantType]
-    resolve -> (obj, args, ctx) {
-      AssociationQuery.new(owner: obj, association: :variants)
+    resolve -> (product, args, ctx) {
+      AssociationQuery.new(owner: product, association: :variants)
+    }
+  end
+
+  field :variants_count do
+    type types.Int
+    resolve -> (product, args, ctx) {
+      query = AssociationQuery.new(owner: product, association: :variants)
+      GraphQL::Batch::QueriesResolver.new(queries: [query], resolve: ->{ product.variants.size })
     }
   end
 end

@@ -48,7 +48,6 @@ PRODUCTS = [
 PRODUCT_VARIANTS = [
   ProductVariant.new(1, 1, "Red"),
   ProductVariant.new(2, 1, "Blue"),
-  ProductVariant.new(3, 1, "Green"),
   ProductVariant.new(4, 2, "Small"),
   ProductVariant.new(5, 2, "Medium"),
   ProductVariant.new(6, 2, "Large"),

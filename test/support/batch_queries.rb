@@ -12,7 +12,7 @@ class FindQuery < GraphQL::Batch::Query
 
   def self.execute(queries)
     model = queries.first.model
-    ids = queries.map(&:id)
+    ids = queries.map(&:id).uniq
     records = model.find(ids)
     records_by_id = records.each_with_object({}){ |r, h| h[r.id] = r }
     queries.each do |query|
@@ -36,7 +36,7 @@ class AssociationQuery < GraphQL::Batch::Query
   def self.execute(queries)
     owner_class = queries.first.owner.class
     association = queries.first.association
-    owners = queries.map(&:owner)
+    owners = queries.map(&:owner).uniq
     owner_class.preload_association(owners, association)
     queries.each do |query|
       query.complete(query.owner.public_send(association))

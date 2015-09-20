@@ -68,12 +68,55 @@ class Graphql::BatchTest < Minitest::Test
             "variants" => [
               { "id" => "1", "title" => "Red" },
               { "id" => "2", "title" => "Blue" },
-              { "id" => "3", "title" => "Green" },
             ],
           },
           {
             "id" => "2",
             "title" => "Pants",
+            "variants" => [
+              { "id" => "4", "title" => "Small" },
+              { "id" => "5", "title" => "Medium" },
+              { "id" => "6", "title" => "Large" },
+            ],
+          }
+        ]
+      }
+    }
+    assert_equal expected, result
+    assert_equal ["Product?limit=2", "Product/1,2/variants"], QUERIES
+  end
+
+  def test_query_dependant_resolver
+    query_string = <<-GRAPHQL
+      {
+        products(first: 2) {
+          id
+          title
+          variants_count
+          variants {
+            id
+            title
+          }
+        }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string, debug: true)
+    expected = {
+      "data" => {
+        "products" => [
+          {
+            "id" => "1",
+            "title" => "Shirt",
+            "variants_count" => 2,
+            "variants" => [
+              { "id" => "1", "title" => "Red" },
+              { "id" => "2", "title" => "Blue" },
+            ],
+          },
+          {
+            "id" => "2",
+            "title" => "Pants",
+            "variants_count" => 3,
             "variants" => [
               { "id" => "4", "title" => "Small" },
               { "id" => "5", "title" => "Medium" },
