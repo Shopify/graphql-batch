@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "graphql/batch"
+
+require "irb"
+IRB.start
