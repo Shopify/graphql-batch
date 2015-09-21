@@ -35,12 +35,16 @@ module GraphQL::Batch
       def get_finished_value(raw_value)
         if raw_value.is_a?(QueryContainer)
           raw_value.query_listener = self
-          raw_value.each_query do |query|
-            execution_strategy.batched_queries[query.group_key] << query
-          end
+          register_queries(raw_value)
           self
         else
           super
+        end
+      end
+
+      def register_queries(query_container)
+        query_container.each_query do |query|
+          execution_strategy.batched_queries[query.group_key] << query
         end
       end
 

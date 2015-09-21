@@ -86,7 +86,7 @@ class Graphql::BatchTest < Minitest::Test
     assert_equal ["Product?limit=2", "Product/1,2/variants"], QUERIES
   end
 
-  def test_query_group
+  def test_query_group_with_single_query
     query_string = <<-GRAPHQL
       {
         products(first: 2) {
@@ -144,5 +144,29 @@ class Graphql::BatchTest < Minitest::Test
     }
     assert_equal expected, result
     assert_equal ["Product/2", "Product/2/variants"], QUERIES
+  end
+
+  def test_query_group_with_sub_queries
+    query_string = <<-GRAPHQL
+      {
+        product(id: "1") {
+          images { id, filename }
+        }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string, debug: true)
+    expected = {
+      "data" => {
+        "product" => {
+          "images" => [
+            { "id" => "1", "filename" => "shirt.jpg" },
+            { "id" => "4", "filename" => "red-shirt.jpg" },
+            { "id" => "5", "filename" => "blue-shirt.jpg" },
+          ]
+        }
+      }
+    }
+    assert_equal expected, result
+    assert_equal ["Product/1", "Image/1", "Product/1/variants", "ProductVariant/1,2/images"], QUERIES
   end
 end
