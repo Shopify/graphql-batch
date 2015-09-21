@@ -31,7 +31,7 @@ ProductType = GraphQL::ObjectType.define do
         end
       end
       GraphQL::Batch::QueryGroup.new([product_image_query, variant_images_query]) do
-        [product_image_query.result] + variant_images_query.result.result
+        [product_image_query.result] + variant_images_query.result
       end
     }
   end

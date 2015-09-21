@@ -19,19 +19,17 @@ module GraphQL::Batch
 
     def query_completed(query)
       @pending_queries.delete(query)
-      if query.result.is_a?(QueryContainer)
-        query_container = query.result
-        query_container.query_listener = self
-        @pending_queries << query_container
-        register_queries(query_container)
-      end
       if @pending_queries.empty?
-        complete(@block.call)
+        result = @block.call
+        @block = nil
+        if result.is_a?(QueryContainer)
+          result.query_listener = self
+          @pending_queries << result
+          register_queries(result)
+        else
+          complete(result)
+        end
       end
-    end
-
-    def register_queries(query_container)
-      query_listener.register_queries(query_container)
     end
   end
 end

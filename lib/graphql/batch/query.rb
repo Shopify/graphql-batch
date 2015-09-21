@@ -14,7 +14,10 @@ module GraphQL::Batch
     end
 
     def complete(result)
-      result = @block.call(result) if @block
+      if @block
+        result = @block.call(result)
+        @block = nil
+      end
       super(result)
     end
 
