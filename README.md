@@ -18,7 +18,7 @@ Or install it yourself as:
 
     $ gem install graphql-batch
 
-## Basic Usage
+## Usage
 
 Require the library
 

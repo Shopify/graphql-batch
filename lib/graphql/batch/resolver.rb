@@ -1,22 +1,17 @@
 module GraphQL::Batch
   class Resolver
-    attr_accessor :result_hash, :field_resolution
+    attr_accessor :resolver_owner, :result
 
     def each_query
       raise NotImplementedError
     end
 
-    def query_completed(query)
-      raise NotImplementedError
-    end
-
-    def result_key
-      ast_node = @field_resolution.ast_node
-      ast_node.alias || ast_node.name
-    end
-
-    def resolve(raw_value)
-      @result_hash[result_key] = @field_resolution.get_finished_value(raw_value)
+    def complete(result)
+      if instance_variable_defined?(:@result)
+        raise "Resolver was already completed"
+      end
+      @result = result
+      resolver_owner.child_completed(self)
     end
   end
 end

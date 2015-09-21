@@ -21,7 +21,7 @@ module GraphQL::Batch
       def result
         result_hash = super
         result_hash.each do |key, value|
-          if value.is_a?(Resolver)
+          if value.is_a?(FieldResolution)
             value.result_hash = result_hash
           end
         end
@@ -30,20 +30,24 @@ module GraphQL::Batch
     end
 
     class FieldResolution < GraphQL::Query::SerialExecution::FieldResolution
+      attr_accessor :result_hash
+
       def get_finished_value(raw_value)
-        if raw_value.is_a?(Query)
-          raw_value = GraphQL::Batch::QueryResolver.new(raw_value)
-        end
         if raw_value.is_a?(Resolver)
           resolver = raw_value
-          resolver.field_resolution = self
+          resolver.resolver_owner = self
           resolver.each_query do |query|
             execution_strategy.batched_queries[query.group_key] << query
           end
-          resolver
+          self
         else
           super
         end
+      end
+
+      def child_completed(query)
+        result_key = ast_node.alias || ast_node.name
+        @result_hash[result_key] = get_finished_value(query.result)
       end
     end
   end
