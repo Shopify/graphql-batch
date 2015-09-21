@@ -86,7 +86,7 @@ class Graphql::BatchTest < Minitest::Test
     assert_equal ["Product?limit=2", "Product/1,2/variants"], QUERIES
   end
 
-  def test_query_dependant_resolver
+  def test_query_group
     query_string = <<-GRAPHQL
       {
         products(first: 2) {
@@ -128,5 +128,21 @@ class Graphql::BatchTest < Minitest::Test
     }
     assert_equal expected, result
     assert_equal ["Product?limit=2", "Product/1,2/variants"], QUERIES
+  end
+
+  def test_sub_queries
+    query_string = <<-GRAPHQL
+      {
+        product_variants_count(id: "2")
+      }
+    GRAPHQL
+    result = Schema.execute(query_string, debug: true)
+    expected = {
+      "data" => {
+        "product_variants_count" => 3
+      }
+    }
+    assert_equal expected, result
+    assert_equal ["Product/2", "Product/2/variants"], QUERIES
   end
 end

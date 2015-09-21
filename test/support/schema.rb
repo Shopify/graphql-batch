@@ -43,6 +43,16 @@ QueryType = GraphQL::ObjectType.define do
     argument :first, !types.Int
     resolve -> (obj, args, ctx) { Product.first(args["first"]) }
   end
+
+  field :product_variants_count do
+    type types.Int
+    argument :id, !types.ID
+    resolve -> (obj, args, ctx) {
+      FindQuery.new(model: Product, id: args["id"]) do |product|
+        AssociationQuery.new(owner: product, association: :variants, &:size)
+      end
+    }
+  end
 end
 
 Schema = GraphQL::Schema.new(query: QueryType)

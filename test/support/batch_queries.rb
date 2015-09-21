@@ -1,9 +1,10 @@
 class FindQuery < GraphQL::Batch::Query
   attr_reader :model, :id
 
-  def initialize(model:, id:)
+  def initialize(model:, id:, &block)
     @model = model
     @id = Integer(id)
+    super(&block)
   end
 
   def group_key
@@ -24,9 +25,10 @@ end
 class AssociationQuery < GraphQL::Batch::Query
   attr_reader :owner, :association
 
-  def initialize(owner:, association:)
+  def initialize(owner:, association:, &block)
     @owner = owner
     @association = association
+    super(&block)
   end
 
   def group_key
