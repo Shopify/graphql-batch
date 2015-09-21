@@ -1,6 +1,6 @@
 module GraphQL::Batch
-  class Resolver
-    attr_accessor :resolver_owner, :result
+  class QueryContainer
+    attr_accessor :query_listener, :result
 
     def each_query
       raise NotImplementedError
@@ -8,10 +8,10 @@ module GraphQL::Batch
 
     def complete(result)
       if instance_variable_defined?(:@result)
-        raise "Resolver was already completed"
+        raise "Query was already completed"
       end
       @result = result
-      resolver_owner.child_completed(self)
+      query_listener.query_completed(self)
     end
   end
 end

@@ -33,10 +33,9 @@ module GraphQL::Batch
       attr_accessor :result_hash
 
       def get_finished_value(raw_value)
-        if raw_value.is_a?(Resolver)
-          resolver = raw_value
-          resolver.resolver_owner = self
-          resolver.each_query do |query|
+        if raw_value.is_a?(QueryContainer)
+          raw_value.query_listener = self
+          raw_value.each_query do |query|
             execution_strategy.batched_queries[query.group_key] << query
           end
           self
@@ -45,7 +44,7 @@ module GraphQL::Batch
         end
       end
 
-      def child_completed(query)
+      def query_completed(query)
         result_key = ast_node.alias || ast_node.name
         @result_hash[result_key] = get_finished_value(query.result)
       end

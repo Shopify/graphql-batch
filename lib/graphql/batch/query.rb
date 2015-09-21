@@ -1,5 +1,5 @@
 module GraphQL::Batch
-  class Query < Resolver
+  class Query < QueryContainer
     # batched queries with the same key are merged together
     def group_key
       self.class.name

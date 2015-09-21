@@ -1,9 +1,9 @@
 module GraphQL::Batch
-  class QueryGroup < Resolver
+  class QueryGroup < QueryContainer
     def initialize(queries, &block)
       @pending_queries = Array(queries)
       @pending_queries.each do |query|
-        query.resolver_owner = self
+        query.query_listener = self
       end
       @block = block
       raise ArgumentError, "QueryGroup requires a block" unless block
@@ -15,7 +15,7 @@ module GraphQL::Batch
       end
     end
 
-    def child_completed(query)
+    def query_completed(query)
       if @pending_queries.delete(query) && @pending_queries.empty?
         complete(@block.call)
       end
