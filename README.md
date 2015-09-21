@@ -20,6 +20,8 @@ Or install it yourself as:
 
 ## Usage
 
+### Basic Usage
+
 Require the library
 
 ```ruby
@@ -32,9 +34,10 @@ Define a GraphQL::Batch::Query derived class. Use group_key to specify which que
 class FindQuery < GraphQL::Batch::Query
   attr_reader :model, :id
 
-  def initialize(model, id)
+  def initialize(model, id, &block)
     @model = model
     @id = id
+    super(&block)
   end
 
   # super returns the class name
@@ -64,6 +67,41 @@ Use the batch execution strategy with your schema
 ```ruby
 MySchema = GraphQL::Schema.new(query: MyQueryType)
 MySchema.query_execution_strategy = GraphQL::Batch::ExecutionStrategy
+```
+
+### Query Dependant Computed Fields
+
+If you don't want to use a query result directly, then you can pass a block which gets called after the query completes.
+
+```ruby
+resolve -> (obj, args, context) do
+  FindQuery.new(Product, args["id"]) do |product|
+    product.title
+  end
+end
+```
+
+You may also need to do another query that depends on the first one to get the result, in which case the query block can return another query.
+
+```ruby
+resolve -> (obj, args, context) do
+  FindQuery.new(Product, args["id"]) do |product|
+    FindQuery.new(Image, product.image_id)
+  end
+end
+```
+
+If the second query doesn't depend on the other one, then you can use GraphQL::Batch::QueryGroup, which allows each query in the group to be batched with other queries.
+
+```ruby
+resolve -> (obj, args, context) do
+  smart_collection_query = CountQuery.new(SmartCollection, context.shop_id)
+  custom_collection_query = CountQuery.new(CustomCollection, context.shop_id)
+
+  QueryGroup.new([smart_collection_query, custom_collection_query]) do
+    smart_collection_query.result + custom_collection_query.result
+  end
+end
 ```
 
 ## Development
