@@ -22,15 +22,15 @@ ProductType = GraphQL::ObjectType.define do
     type types[!ImageType]
     resolve -> (product, args, ctx) {
       product_image_query = FindQuery.new(model: Image, id: product.image_id)
-      variant_images_query = AssociationQuery.new(owner: product, association: :variants) do |variants|
+      variant_images_query = AssociationQuery.new(owner: product, association: :variants).then do |variants|
         variant_image_queries = variants.map do |variant|
           AssociationQuery.new(owner: variant, association: :images)
         end
-        GraphQL::Batch::QueryGroup.new(variant_image_queries) do
+        GraphQL::Batch::QueryGroup.new(variant_image_queries).then do
           variant_image_queries.map(&:result).flatten
         end
       end
-      GraphQL::Batch::QueryGroup.new([product_image_query, variant_images_query]) do
+      GraphQL::Batch::QueryGroup.new([product_image_query, variant_images_query]).then do
         [product_image_query.result] + variant_images_query.result
       end
     }
@@ -47,7 +47,7 @@ ProductType = GraphQL::ObjectType.define do
     type types.Int
     resolve -> (product, args, ctx) {
       query = AssociationQuery.new(owner: product, association: :variants)
-      GraphQL::Batch::QueryGroup.new([query]) { query.result.size }
+      GraphQL::Batch::QueryGroup.new([query]).then { query.result.size }
     }
   end
 end
@@ -73,8 +73,8 @@ QueryType = GraphQL::ObjectType.define do
     type types.Int
     argument :id, !types.ID
     resolve -> (obj, args, ctx) {
-      FindQuery.new(model: Product, id: args["id"]) do |product|
-        AssociationQuery.new(owner: product, association: :variants, &:size)
+      FindQuery.new(model: Product, id: args["id"]).then do |product|
+        AssociationQuery.new(owner: product, association: :variants).then(&:size)
       end
     }
   end

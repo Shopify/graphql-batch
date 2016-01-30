@@ -1,56 +1,61 @@
 module GraphQL::Batch
   class ExecutionStrategy < GraphQL::Query::SerialExecution
-    attr_reader :batched_queries
-
-    def initialize
-      @batched_queries = Hash.new{ |hash, key| hash[key] = [] }
-    end
-
     class OperationResolution < GraphQL::Query::SerialExecution::OperationResolution
       def result
-        result = super
-        until execution_strategy.batched_queries.empty?
-          queries = execution_strategy.batched_queries.shift.last
-          queries.first.class.execute(queries)
-        end
-        result
+        GraphQL::Batch.execute(super)
       end
     end
 
     class SelectionResolution < GraphQL::Query::SerialExecution::SelectionResolution
       def result
-        result_hash = super
-        result_hash.each do |key, value|
-          if value.is_a?(FieldResolution)
-            value.result_hash = result_hash
+        wrap_queries(super)
+      end
+
+      private
+
+      def wrap_queries(obj)
+        queries = nil
+        case obj
+        when Array
+          array = obj
+          array.each_with_index do |value, i|
+            value = wrap_queries(value)
+            if value.is_a?(QueryContainer)
+              array[i] = nil
+              queries ||= []
+              queries << value.then do |result|
+                array[i] = result
+              end
+            end
+          end
+        when Hash
+          hash = obj
+          hash.each do |key, value|
+            value = wrap_queries(value)
+            if value.is_a?(QueryContainer)
+              hash[key] = nil
+              queries ||= []
+              queries << value.then do |result|
+                hash[key] = result
+              end
+            end
           end
         end
-        result_hash
+        queries ? QueryGroup.new(queries).then { obj } : obj
       end
     end
 
     class FieldResolution < GraphQL::Query::SerialExecution::FieldResolution
-      attr_accessor :result_hash
-
       def get_finished_value(raw_value)
         if raw_value.is_a?(QueryContainer)
-          raw_value.query_listener = self
-          register_queries(raw_value)
-          self
+          raw_value.then do |result|
+            super(result)
+          end.rescue(GraphQL::ExecutionError) do |err|
+            super(err)
+          end
         else
           super
         end
-      end
-
-      def register_queries(query_container)
-        query_container.each_query do |query|
-          execution_strategy.batched_queries[query.group_key] << query
-        end
-      end
-
-      def query_completed(query)
-        result_key = ast_node.alias || ast_node.name
-        @result_hash[result_key] = get_finished_value(query.result)
       end
     end
   end
