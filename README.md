@@ -1,4 +1,4 @@
-# Graphql::Batch
+# GraphQL::Batch
 
 Provides an executor for the [`graphql` gem](https://github.com/rmosolgo/graphql-ruby) which allows queries to be batched.
 
@@ -71,11 +71,11 @@ MySchema.query_execution_strategy = GraphQL::Batch::ExecutionStrategy
 
 ### Query Dependant Computed Fields
 
-If you don't want to use a query result directly, then you can pass a block which gets called after the query completes.
+If you don't want to use a query result directly, then you can use `.then` with a block to transform the query result.
 
 ```ruby
 resolve -> (obj, args, context) do
-  FindQuery.new(Product, args["id"]) do |product|
+  FindQuery.new(Product, args["id"]).then do |product|
     product.title
   end
 end
@@ -85,7 +85,7 @@ You may also need to do another query that depends on the first one to get the r
 
 ```ruby
 resolve -> (obj, args, context) do
-  FindQuery.new(Product, args["id"]) do |product|
+  FindQuery.new(Product, args["id"]).then do |product|
     FindQuery.new(Image, product.image_id)
   end
 end
@@ -95,13 +95,54 @@ If the second query doesn't depend on the other one, then you can use GraphQL::B
 
 ```ruby
 resolve -> (obj, args, context) do
-  smart_collection_query = CountQuery.new(SmartCollection, context.shop_id)
-  custom_collection_query = CountQuery.new(CustomCollection, context.shop_id)
-
-  QueryGroup.new([smart_collection_query, custom_collection_query]) do
-    smart_collection_query.result + custom_collection_query.result
+  QueryGroup.new([smart_collection_query, custom_collection_query]).then do |results|
+    results.reduce(&:+)
   end
 end
+
+### Error Handling
+
+Exceptions can be rescued by using `.rescue(error_class)` instead of `.then` which could be used for a fallback
+
+```ruby
+resolve -> (obj, args, context) do
+  CacheFetchQuery.new(Product, args["id"]).rescue(Redis::BaseConnectionError) do |err|
+    logger.warn err.message
+    FindQuery.new(Product, args["id"])
+  end
+end
+```
+
+If you want to do something after the query without affecting the result, then you can use `.ensure` which could be used for instrumentation
+
+```ruby
+resolve -> (obj, args, context) do
+  t0 = Time.now
+  FindQuery.new(Product, args["id"]).ensure do |result, error|
+    duration = Time.now - t0
+    logger.info "Product load completed in #{duration} seconds"
+  end
+end
+```
+
+## Unit Testing
+
+Batch query objects have an execute method to simplify unit testing and debugging by allowing batch queries to be executed without having to define a graphql schema.
+
+```ruby
+  def test_single_query
+    product = products(:snowboard)
+    assert_equal product.title, FindQuery.new(Product, args["id"]).then(&:title).execute
+  end
+
+  def test_batch_query
+    products = [products(:snowboard), products(:jacket)]
+    query1 = FindQuery.new(Product, products(:snowboard).id).then(&:title)
+    query2 = FindQuery.new(Product, products(:jacket).id).then(&:title)
+    group_query = QueryGroup.new([query1, query2]).execute
+    assert_equal products(:snowboard).title, query1.result
+    assert_equal products(:jacket).title, query2.result
+  end
 ```
 
 ## Development
