@@ -21,17 +21,15 @@ ProductType = GraphQL::ObjectType.define do
   field :images do
     type types[!ImageType]
     resolve -> (product, args, ctx) {
-      product_image_query = FindQuery.new(model: Image, id: product.image_id)
-      variant_images_query = AssociationQuery.new(owner: product, association: :variants) do |variants|
+      product_image_query = RecordLoader.for(Image).load(product.image_id)
+      variant_images_query = AssociationLoader.for(Product, :variants).load(product).then do |variants|
         variant_image_queries = variants.map do |variant|
-          AssociationQuery.new(owner: variant, association: :images)
+          AssociationLoader.for(ProductVariant, :images).load(variant)
         end
-        GraphQL::Batch::QueryGroup.new(variant_image_queries) do
-          variant_image_queries.map(&:result).flatten
-        end
+        Promise.all(variant_image_queries).then(&:flatten)
       end
-      GraphQL::Batch::QueryGroup.new([product_image_query, variant_images_query]) do
-        [product_image_query.result] + variant_images_query.result
+      Promise.all([product_image_query, variant_images_query]).then do
+        [product_image_query.value] + variant_images_query.value
       end
     }
   end
@@ -39,15 +37,15 @@ ProductType = GraphQL::ObjectType.define do
   field :variants do
     type types[!ProductVariantType]
     resolve -> (product, args, ctx) {
-      AssociationQuery.new(owner: product, association: :variants)
+      AssociationLoader.for(Product, :variants).load(product)
     }
   end
 
   field :variants_count do
     type types.Int
     resolve -> (product, args, ctx) {
-      query = AssociationQuery.new(owner: product, association: :variants)
-      GraphQL::Batch::QueryGroup.new([query]) { query.result.size }
+      query = AssociationLoader.for(Product, :variants).load(product)
+      Promise.all([query]).then { query.value.size }
     }
   end
 end
@@ -59,7 +57,7 @@ QueryType = GraphQL::ObjectType.define do
     type ProductType
     argument :id, !types.ID
     resolve -> (obj, args, ctx) {
-      FindQuery.new(model: Product, id: args["id"])
+      RecordLoader.for(Product).load(args["id"])
     }
   end
 
@@ -73,8 +71,8 @@ QueryType = GraphQL::ObjectType.define do
     type types.Int
     argument :id, !types.ID
     resolve -> (obj, args, ctx) {
-      FindQuery.new(model: Product, id: args["id"]) do |product|
-        AssociationQuery.new(owner: product, association: :variants, &:size)
+      RecordLoader.for(Product).load(args["id"]).then do |product|
+        AssociationLoader.for(Product, :variants).load(product).then(&:size)
       end
     }
   end
