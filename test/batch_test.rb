@@ -5,6 +5,18 @@ class Graphql::BatchTest < Minitest::Test
     QUERIES.clear
   end
 
+  def test_no_queries
+    query_string = '{ constant }'
+    result = Schema.execute(query_string, debug: true)
+    expected = {
+      "data" => {
+        "constant" => "constant value"
+      }
+    }
+    assert_equal expected, result
+    assert_equal [], QUERIES
+  end
+
   def test_single_query
     query_string = <<-GRAPHQL
       {

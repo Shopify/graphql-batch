@@ -60,6 +60,10 @@ end
 QueryType = GraphQL::ObjectType.define do
   name "Query"
 
+  field :constant, !types.String do
+    resolve ->(_, _, _) { "constant value" }
+  end
+
   field :product do
     type ProductType
     argument :id, !types.ID

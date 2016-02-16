@@ -1,12 +1,16 @@
 module GraphQL::Batch
   class ExecutionStrategy < GraphQL::Query::SerialExecution
     def execute(_, _, _)
-      as_promise_unless_resolved(super).sync
+      as_promise(super).sync
     ensure
       GraphQL::Batch::Executor.current.clear
     end
 
     private
+
+    def as_promise(result)
+      GraphQL::Batch::Promise.resolve(as_promise_unless_resolved(result))
+    end
 
     def as_promise_unless_resolved(result)
       all_promises = []
