@@ -19,7 +19,10 @@ module GraphQL::Batch
         all_promises = []
         each_promise(result) do |obj, key, promise|
           obj[key] = nil
-          all_promises << promise.then { |value| obj[key] = value }
+          all_promises << promise.then { |value|
+            obj[key] = value
+            as_promise_unless_resolved(value)
+          }
         end
         return result if all_promises.empty?
         Promise.all(all_promises).then { result }

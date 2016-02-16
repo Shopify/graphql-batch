@@ -10,6 +10,13 @@ ProductVariantType = GraphQL::ObjectType.define do
 
   field :id, !types.ID
   field :title, !types.String
+  field :image_ids, !types[types.ID] do
+    resolve ->(variant, _, _) {
+      AssociationLoader.for(ProductVariant, :images).load(variant).then do |images|
+        images.map(&:id)
+      end
+    }
+  end
 end
 
 ProductType = GraphQL::ObjectType.define do

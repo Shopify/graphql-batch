@@ -169,4 +169,42 @@ class Graphql::BatchTest < Minitest::Test
     assert_equal expected, result
     assert_equal ["Product/1", "Image/1", "Product/1/variants", "ProductVariant/1,2/images"], QUERIES
   end
+
+  def test_load_list_of_objects_with_loaded_field
+    query_string = <<-GRAPHQL
+      {
+        products(first: 2) {
+          id
+          variants {
+            id
+            image_ids
+          }
+        }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string, debug: true)
+    expected = {
+      "data" => {
+        "products" => [
+          {
+            "id" => "1",
+            "variants" => [
+              { "id" => "1", "image_ids" => ["4"] },
+              { "id" => "2", "image_ids" => ["5"] },
+            ],
+          },
+          {
+            "id" => "2",
+            "variants" => [
+              { "id" => "4", "image_ids" => [] },
+              { "id" => "5", "image_ids" => [] },
+              { "id" => "6", "image_ids" => [] },
+            ],
+          }
+        ]
+      }
+    }
+    assert_equal expected, result
+    assert_equal ["Product?limit=2", "Product/1,2/variants", "ProductVariant/1,2,4,5,6/images"], QUERIES
+  end
 end
