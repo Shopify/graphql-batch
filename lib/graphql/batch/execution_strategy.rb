@@ -1,22 +1,23 @@
 module GraphQL::Batch
   class ExecutionStrategy < GraphQL::Query::SerialExecution
     def execute(_, _, _)
-      as_promise(super).sync
+      as_promise_unless_resolved(super).sync
     ensure
       GraphQL::Batch::Executor.current.clear
     end
 
     private
 
-    def as_promise(result)
+    def as_promise_unless_resolved(result)
       all_promises = []
       each_promise(result) do |obj, key, promise|
         obj[key] = nil
         all_promises << promise.then do |value|
           obj[key] = value
-          as_promise(result)
+          as_promise_unless_resolved(value)
         end
       end
+      return result if all_promises.empty?
       Promise.all(all_promises).then { result }
     end
 
