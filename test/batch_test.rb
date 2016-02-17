@@ -234,4 +234,19 @@ class Graphql::BatchTest < Minitest::Test
     assert_equal expected, result
     assert_equal ["Product?limit=2", "Product/1,2/variants", "ProductVariant/1,2,4,5,6/images"], QUERIES
   end
+
+  def test_load_error
+    query_string = <<-GRAPHQL
+      {
+        constant
+        load_execution_error
+      }
+    GRAPHQL
+    result = Schema.execute(query_string, debug: true)
+    expected = {
+      "data" => { "constant"=>"constant value", "load_execution_error" => nil },
+      "errors" => [{ "message" => "test error message", "locations"=>[{"line"=>3, "column"=>9}]}],
+    }
+    assert_equal expected, result
+  end
 end

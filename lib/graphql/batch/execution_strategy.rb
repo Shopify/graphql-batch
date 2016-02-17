@@ -49,7 +49,12 @@ module GraphQL::Batch
     class FieldResolution < GraphQL::Query::SerialExecution::FieldResolution
       def get_finished_value(raw_value)
         if raw_value.is_a?(::Promise)
-          raw_value.then { |result| super(result) }
+          raw_value.then(->(result) { super(result) }, lambda do |error|
+            raise error unless error.is_a?(GraphQL::ExecutionError)
+            error.ast_node = ast_node
+            query.context.errors << error
+            nil
+          end)
         else
           super
         end

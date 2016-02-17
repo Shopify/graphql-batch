@@ -64,6 +64,14 @@ QueryType = GraphQL::ObjectType.define do
     resolve ->(_, _, _) { "constant value" }
   end
 
+  field :load_execution_error, types.String do
+    resolve ->(_, _, _) {
+      RecordLoader.for(Product).load(1).then do |product|
+        raise GraphQL::ExecutionError, "test error message"
+      end
+    }
+  end
+
   field :product do
     type ProductType
     argument :id, !types.ID
