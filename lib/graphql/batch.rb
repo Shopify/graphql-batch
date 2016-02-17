@@ -3,6 +3,7 @@ require "promise.rb"
 
 module GraphQL
   module Batch
+    BrokenPromiseError = Class.new(StandardError)
   end
 end
 

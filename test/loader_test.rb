@@ -77,4 +77,11 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   def test_query_in_callback
     assert_equal 5, EchoLoader.for().load(4).then { |value| EchoLoader.for().load(value + 1) }.sync
   end
+
+  def test_broken_promise_executor_check
+    promise = GraphQL::Batch::Promise.new
+    promise.wait
+    assert_equal promise.reason.class, GraphQL::Batch::BrokenPromiseError
+    assert_equal promise.reason.message, "Promise wasn't fulfilled after all queries were loaded"
+  end
 end
