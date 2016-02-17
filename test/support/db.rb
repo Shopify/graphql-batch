@@ -11,7 +11,7 @@ module ModelClassMethods
   def find(ids)
     ids = Array(ids)
     QUERIES << "#{name}/#{ids.join(',')}"
-    ids.map{ |id| fixtures[id].dup }.compact
+    ids.map{ |id| fixtures[id] }.compact.map(&:dup)
   end
 
   def preload_association(owners, association)

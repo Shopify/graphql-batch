@@ -20,6 +20,10 @@ module GraphQL::Batch
       promises_by_key[key].fulfill(value)
     end
 
+    def fulfilled?(key)
+      promises_by_key[key].fulfilled?
+    end
+
     # batch load keys and fulfill promises
     def perform(keys)
       raise NotImplementedError
