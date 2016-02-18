@@ -57,6 +57,21 @@ class Graphql::BatchTest < Minitest::Test
     assert_equal ["Product/1,2"], QUERIES
   end
 
+  def test_record_missing
+    query_string = <<-GRAPHQL
+      {
+        product(id: "123") {
+          id
+          title
+        }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string, debug: true)
+    expected = { "data" => { "product" => nil } }
+    assert_equal expected, result
+    assert_equal ["Product/123"], QUERIES
+  end
+
   def test_batched_association_preload
     query_string = <<-GRAPHQL
       {
@@ -218,5 +233,20 @@ class Graphql::BatchTest < Minitest::Test
     }
     assert_equal expected, result
     assert_equal ["Product?limit=2", "Product/1,2/variants", "ProductVariant/1,2,4,5,6/images"], QUERIES
+  end
+
+  def test_load_error
+    query_string = <<-GRAPHQL
+      {
+        constant
+        load_execution_error
+      }
+    GRAPHQL
+    result = Schema.execute(query_string, debug: true)
+    expected = {
+      "data" => { "constant"=>"constant value", "load_execution_error" => nil },
+      "errors" => [{ "message" => "test error message", "locations"=>[{"line"=>3, "column"=>9}]}],
+    }
+    assert_equal expected, result
   end
 end

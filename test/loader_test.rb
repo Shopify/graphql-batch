@@ -11,10 +11,13 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   class EchoLoader < GraphQL::Batch::Loader
-    attr_reader :value
-
     def perform(keys)
       keys.each { |key| fulfill(key, key) }
+    end
+  end
+
+  class BrokenLoader < GraphQL::Batch::Loader
+    def perform(keys)
     end
   end
 
@@ -76,5 +79,19 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
   def test_query_in_callback
     assert_equal 5, EchoLoader.for().load(4).then { |value| EchoLoader.for().load(value + 1) }.sync
+  end
+
+  def test_broken_promise_executor_check
+    promise = GraphQL::Batch::Promise.new
+    promise.wait
+    assert_equal promise.reason.class, GraphQL::Batch::BrokenPromiseError
+    assert_equal promise.reason.message, "Promise wasn't fulfilled after all queries were loaded"
+  end
+
+  def test_broken_promise_loader_check
+    promise = BrokenLoader.for().load(1)
+    promise.wait
+    assert_equal promise.reason.class, GraphQL::Batch::BrokenPromiseError
+    assert_equal promise.reason.message, "#{BrokenLoader.name} didn't fulfill promise for key 1"
   end
 end

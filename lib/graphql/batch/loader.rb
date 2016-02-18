@@ -20,6 +20,10 @@ module GraphQL::Batch
       promises_by_key[key].fulfill(value)
     end
 
+    def fulfilled?(key)
+      promises_by_key[key].fulfilled?
+    end
+
     # batch load keys and fulfill promises
     def perform(keys)
       raise NotImplementedError
@@ -27,9 +31,20 @@ module GraphQL::Batch
 
     def resolve
       perform(keys)
+      check_for_broken_promises
     rescue => err
       promises_by_key.each do |key, promise|
         promise.reject(err)
+      end
+    end
+
+    private
+
+    def check_for_broken_promises
+      promises_by_key.each do |key, promise|
+        if promise.pending?
+          promise.reject(BrokenPromiseError.new("#{self.class} didn't fulfill promise for key #{key.inspect}"))
+        end
       end
     end
   end
