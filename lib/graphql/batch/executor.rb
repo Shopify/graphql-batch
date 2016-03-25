@@ -28,6 +28,10 @@ module GraphQL::Batch
       end
     end
 
+    def wait_all
+      tick until loaders.empty?
+    end
+
     def clear
       loaders.clear
     end

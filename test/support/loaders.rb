@@ -24,3 +24,17 @@ class AssociationLoader < GraphQL::Batch::Loader
     owners.each { |owner| fulfill(owner, owner.public_send(@association)) }
   end
 end
+
+class CounterLoader < GraphQL::Batch::Loader
+  def initialize(hash)
+    @hash = hash
+  end
+
+  def load(key=Object.new)
+    super(key)
+  end
+
+  def perform(keys)
+    keys.each { |key| fulfill(key, @hash[:counter][0]) }
+  end
+end

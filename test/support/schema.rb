@@ -97,5 +97,30 @@ QueryType = GraphQL::ObjectType.define do
   end
 end
 
-Schema = GraphQL::Schema.new(query: QueryType)
+CounterType = GraphQL::ObjectType.define do
+  name "Counter"
+
+  field :value, !types.Int do
+    resolve ->(obj, _, _) { obj }
+  end
+
+  field :load_value, !types.Int do
+    resolve ->(_, _, ctx) { CounterLoader.for(ctx).load }
+  end
+end
+
+MutationType = GraphQL::ObjectType.define do
+  name "Mutation"
+
+  field :increment_counter, !CounterType do
+    resolve ->(_, _, ctx) { ctx[:counter][0] += 1; CounterLoader.for(ctx).load }
+  end
+
+  field :counter_loader, !types.Int do
+    resolve ->(_, _, ctx) { CounterLoader.for(ctx).load }
+  end
+end
+
+Schema = GraphQL::Schema.new(query: QueryType, mutation: MutationType)
 Schema.query_execution_strategy = GraphQL::Batch::ExecutionStrategy
+Schema.mutation_execution_strategy = GraphQL::Batch::MutationExecutionStrategy
