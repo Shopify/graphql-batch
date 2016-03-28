@@ -249,4 +249,25 @@ class Graphql::BatchTest < Minitest::Test
     }
     assert_equal expected, result
   end
+
+  def test_mutation_execution
+    query_string = <<-GRAPHQL
+      mutation {
+        count1: counter_loader
+        incr1: increment_counter { value, load_value }
+        count2: counter_loader
+        incr2: increment_counter { value, load_value }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string, context: { counter: [0] }, debug: true)
+    expected = {
+      "data" => {
+        "count1" => 0,
+        "incr1" => { "value" => 1, "load_value" => 1 },
+        "count2" => 1,
+        "incr2" => { "value" => 2, "load_value" => 2 },
+      }
+    }
+    assert_equal expected, result
+  end
 end
