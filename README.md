@@ -90,6 +90,7 @@ resolve -> (obj, args, context) do
     results.reduce(&:+)
   end
 end
+```
 
 `.then` can optionally take two lambda arguments, the first of which is equivalent to passing a block to `.then`, and the second one handles exceptions.  This can be used to provide a fallback
 
