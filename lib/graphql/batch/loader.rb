@@ -16,6 +16,10 @@ module GraphQL::Batch
       promises_by_key[key] ||= Promise.new
     end
 
+    def load_many(keys)
+      Promise.all(keys.map { |key| load(key) })
+    end
+
     def fulfill(key, value)
       promises_by_key[key].fulfill(value)
     end

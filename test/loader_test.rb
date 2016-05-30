@@ -40,6 +40,10 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     assert_equal [2, 1, 2], group.sync
   end
 
+  def test_query_many
+    assert_equal [:a, :b, :c], EchoLoader.for().load_many([:a, :b, :c]).sync
+  end
+
   def test_empty_group_query
     assert_equal [], GraphQL::Batch::Promise.all([]).sync
   end
