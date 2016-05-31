@@ -1,16 +1,24 @@
-QUERIES = []
+class QueryNotifier
+  class << self
+    attr_accessor :subscriber
+
+    def call(query)
+      subscriber && subscriber.call(query)
+    end
+  end
+end
 
 module ModelClassMethods
   attr_accessor :fixtures, :has_manys
 
   def first(count)
-    QUERIES << "#{name}?limit=#{count}"
+    QueryNotifier.call("#{name}?limit=#{count}")
     fixtures.values.first(count).map(&:dup)
   end
 
   def find(ids)
     ids = Array(ids)
-    QUERIES << "#{name}/#{ids.join(',')}"
+    QueryNotifier.call("#{name}/#{ids.join(',')}")
     ids.map{ |id| fixtures[id] }.compact.map(&:dup)
   end
 
@@ -21,7 +29,7 @@ module ModelClassMethods
     rows = association_reflection[:model].fixtures.values
     owner_ids = owners.map(&:id).to_set
 
-    QUERIES << "#{name}/#{owners.map(&:id).join(',')}/#{association}"
+    QueryNotifier.call("#{name}/#{owners.map(&:id).join(',')}/#{association}")
     records = rows.select{ |row|
       owner_ids.include?(row.public_send(foreign_key)) && scope.call(row)
     }
