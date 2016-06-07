@@ -1,6 +1,6 @@
 require_relative 'test_helper'
 
-class Graphql::BatchTest < Minitest::Test
+class GraphQL::BatchTest < Minitest::Test
   def setup
     QUERIES.clear
   end
