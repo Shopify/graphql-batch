@@ -9,8 +9,14 @@ module GraphQL::Batch
 
     attr_reader :loaders
 
+    # Set to true when performing a batch query, otherwise, it is false.
+    #
+    # Can be used to detect unbatched queries in an ActiveSupport::Notifications.subscribe block.
+    attr_reader :loading
+
     def initialize
       @loaders = {}
+      @loading = false
     end
 
     def shift
@@ -18,7 +24,7 @@ module GraphQL::Batch
     end
 
     def tick
-      shift.resolve
+      with_loading(true) { shift.resolve }
     end
 
     def wait(promise)
@@ -34,6 +40,24 @@ module GraphQL::Batch
 
     def clear
       loaders.clear
+    end
+
+    def defer
+      # Since we aren't actually deferring callbacks, we need to set #loading to false so that any queries
+      # that happen in the callback aren't interpreted as being performed in GraphQL::Batch::Loader#perform
+      with_loading(false) { yield }
+    end
+
+    private
+
+    def with_loading(loading)
+      was_loading = @loading
+      begin
+        @loading = loading
+        yield
+      ensure
+        @loading = was_loading
+      end
     end
   end
 end

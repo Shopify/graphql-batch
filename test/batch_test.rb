@@ -1,8 +1,15 @@
 require_relative 'test_helper'
 
 class GraphQL::BatchTest < Minitest::Test
+  attr_reader :queries
+
   def setup
-    QUERIES.clear
+    @queries = []
+    QueryNotifier.subscriber = ->(query) { @queries << query }
+  end
+
+  def teardown
+    QueryNotifier.subscriber = nil
   end
 
   def test_no_queries
@@ -14,7 +21,7 @@ class GraphQL::BatchTest < Minitest::Test
       }
     }
     assert_equal expected, result
-    assert_equal [], QUERIES
+    assert_equal [], queries
   end
 
   def test_single_query
@@ -36,7 +43,7 @@ class GraphQL::BatchTest < Minitest::Test
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/1"], QUERIES
+    assert_equal ["Product/1"], queries
   end
 
   def test_batched_find_by_id
@@ -54,7 +61,7 @@ class GraphQL::BatchTest < Minitest::Test
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/1,2"], QUERIES
+    assert_equal ["Product/1,2"], queries
   end
 
   def test_record_missing
@@ -69,7 +76,7 @@ class GraphQL::BatchTest < Minitest::Test
     result = Schema.execute(query_string, debug: true)
     expected = { "data" => { "product" => nil } }
     assert_equal expected, result
-    assert_equal ["Product/123"], QUERIES
+    assert_equal ["Product/123"], queries
   end
 
   def test_batched_association_preload
@@ -110,7 +117,7 @@ class GraphQL::BatchTest < Minitest::Test
       }
     }
     assert_equal expected, result
-    assert_equal ["Product?limit=2", "Product/1,2/variants"], QUERIES
+    assert_equal ["Product?limit=2", "Product/1,2/variants"], queries
   end
 
   def test_query_group_with_single_query
@@ -154,7 +161,7 @@ class GraphQL::BatchTest < Minitest::Test
       }
     }
     assert_equal expected, result
-    assert_equal ["Product?limit=2", "Product/1,2/variants"], QUERIES
+    assert_equal ["Product?limit=2", "Product/1,2/variants"], queries
   end
 
   def test_sub_queries
@@ -170,7 +177,7 @@ class GraphQL::BatchTest < Minitest::Test
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/2", "Product/2/variants"], QUERIES
+    assert_equal ["Product/2", "Product/2/variants"], queries
   end
 
   def test_query_group_with_sub_queries
@@ -194,7 +201,7 @@ class GraphQL::BatchTest < Minitest::Test
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/1", "Image/1", "Product/1/variants", "ProductVariant/1,2/images"], QUERIES
+    assert_equal ["Product/1", "Image/1", "Product/1/variants", "ProductVariant/1,2/images"], queries
   end
 
   def test_load_list_of_objects_with_loaded_field
@@ -232,7 +239,7 @@ class GraphQL::BatchTest < Minitest::Test
       }
     }
     assert_equal expected, result
-    assert_equal ["Product?limit=2", "Product/1,2/variants", "ProductVariant/1,2,4,5,6/images"], QUERIES
+    assert_equal ["Product?limit=2", "Product/1,2/variants", "ProductVariant/1,2,4,5,6/images"], queries
   end
 
   def test_load_error
