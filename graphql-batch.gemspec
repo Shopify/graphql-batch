@@ -5,7 +5,7 @@ require 'graphql/batch/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "graphql-batch"
-  spec.version       = Graphql::Batch::VERSION
+  spec.version       = GraphQL::Batch::VERSION
   spec.authors       = ["Dylan Thacker-Smith"]
   spec.email         = ["Dylan.Smith@shopify.com"]
 
