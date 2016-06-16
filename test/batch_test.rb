@@ -14,7 +14,7 @@ class GraphQL::BatchTest < Minitest::Test
 
   def test_no_queries
     query_string = '{ constant }'
-    result = Schema.execute(query_string, debug: true)
+    result = Schema.execute(query_string)
     expected = {
       "data" => {
         "constant" => "constant value"
@@ -33,7 +33,7 @@ class GraphQL::BatchTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string, debug: true)
+    result = Schema.execute(query_string)
     expected = {
       "data" => {
         "product" => {
@@ -53,7 +53,7 @@ class GraphQL::BatchTest < Minitest::Test
         product2: product(id: "2") { id, title }
       }
     GRAPHQL
-    result = Schema.execute(query_string, debug: true)
+    result = Schema.execute(query_string)
     expected = {
       "data" => {
         "product1" => { "id" => "1", "title" => "Shirt" },
@@ -73,7 +73,7 @@ class GraphQL::BatchTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string, debug: true)
+    result = Schema.execute(query_string)
     expected = { "data" => { "product" => nil } }
     assert_equal expected, result
     assert_equal ["Product/123"], queries
@@ -92,7 +92,7 @@ class GraphQL::BatchTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string, debug: true)
+    result = Schema.execute(query_string)
     expected = {
       "data" => {
         "products" => [
@@ -134,7 +134,7 @@ class GraphQL::BatchTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string, debug: true)
+    result = Schema.execute(query_string)
     expected = {
       "data" => {
         "products" => [
@@ -170,7 +170,7 @@ class GraphQL::BatchTest < Minitest::Test
         product_variants_count(id: "2")
       }
     GRAPHQL
-    result = Schema.execute(query_string, debug: true)
+    result = Schema.execute(query_string)
     expected = {
       "data" => {
         "product_variants_count" => 3
@@ -188,7 +188,7 @@ class GraphQL::BatchTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string, debug: true)
+    result = Schema.execute(query_string)
     expected = {
       "data" => {
         "product" => {
@@ -216,7 +216,7 @@ class GraphQL::BatchTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string, debug: true)
+    result = Schema.execute(query_string)
     expected = {
       "data" => {
         "products" => [
@@ -249,7 +249,7 @@ class GraphQL::BatchTest < Minitest::Test
         load_execution_error
       }
     GRAPHQL
-    result = Schema.execute(query_string, debug: true)
+    result = Schema.execute(query_string)
     expected = {
       "data" => { "constant"=>"constant value", "load_execution_error" => nil },
       "errors" => [{ "message" => "test error message", "locations"=>[{"line"=>3, "column"=>9}]}],
@@ -266,7 +266,7 @@ class GraphQL::BatchTest < Minitest::Test
         incr2: increment_counter { value, load_value }
       }
     GRAPHQL
-    result = Schema.execute(query_string, context: { counter: [0] }, debug: true)
+    result = Schema.execute(query_string, context: { counter: [0] })
     expected = {
       "data" => {
         "count1" => 0,
