@@ -1,7 +1,8 @@
 module GraphQL::Batch
   class Loader
     def self.for(*group_args)
-      Executor.current.loaders[group_args] ||= new(*group_args)
+      loader_key = [self].concat(group_args)
+      Executor.current.loaders[loader_key] ||= new(*group_args)
     end
 
     def promises_by_key
