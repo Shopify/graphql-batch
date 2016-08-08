@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = "graphql-batch"
   spec.version       = GraphQL::Batch::VERSION
   spec.authors       = ["Dylan Thacker-Smith"]
-  spec.email         = ["Dylan.Smith@shopify.com"]
+  spec.email         = ["gems@shopify.com"]
 
   spec.summary       = "A query batching executor for the graphql gem"
   spec.homepage      = "https://github.com/Shopify/graphql-batch"
