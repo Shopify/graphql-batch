@@ -47,7 +47,7 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   def test_query_many
-    assert_equal [:a, :b, :c], EchoLoader.for().load_many([:a, :b, :c]).sync
+    assert_equal [:a, :b, :c], EchoLoader.load_many([:a, :b, :c]).sync
   end
 
   def test_empty_group_query
@@ -88,7 +88,7 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   def test_query_in_callback
-    assert_equal 5, EchoLoader.for().load(4).then { |value| EchoLoader.for().load(value + 1) }.sync
+    assert_equal 5, EchoLoader.load(4).then { |value| EchoLoader.load(value + 1) }.sync
   end
 
   def test_broken_promise_executor_check
@@ -99,7 +99,7 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   def test_broken_promise_loader_check
-    promise = BrokenLoader.for().load(1)
+    promise = BrokenLoader.load(1)
     promise.wait
     assert_equal promise.reason.class, GraphQL::Batch::BrokenPromiseError
     assert_equal promise.reason.message, "#{BrokenLoader.name} didn't fulfill promise for key 1"
@@ -107,8 +107,8 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
   def test_loader_class_grouping
     group = GraphQL::Batch::Promise.all([
-      EchoLoader.for().load(:a),
-      IncrementLoader.for().load(1),
+      EchoLoader.load(:a),
+      IncrementLoader.load(1),
     ])
     assert_equal [:a, 2], group.sync
   end
