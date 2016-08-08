@@ -5,6 +5,14 @@ module GraphQL::Batch
       Executor.current.loaders[loader_key] ||= new(*group_args)
     end
 
+    def self.load(key)
+      self.for.load(key)
+    end
+
+    def self.load_many(keys)
+      self.for.load_many(keys)
+    end
+
     def promises_by_key
       @promises_by_key ||= {}
     end
