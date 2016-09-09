@@ -30,11 +30,11 @@ module GraphQL::Batch
     end
 
     def fulfill(key, value)
-      promises_by_key[key].fulfill(value)
+      promises_by_key.fetch(key).fulfill(value)
     end
 
     def fulfilled?(key)
-      promises_by_key[key].fulfilled?
+      promises_by_key.fetch(key).fulfilled?
     end
 
     # batch load keys and fulfill promises
