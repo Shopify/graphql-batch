@@ -30,10 +30,12 @@ module GraphQL::Batch
     end
 
     def fulfill(key, value)
+      expect_promise_key!(key)
       promises_by_key[key].fulfill(value)
     end
 
     def fulfilled?(key)
+      expect_promise_key!(key)
       promises_by_key[key].fulfilled?
     end
 
@@ -52,6 +54,10 @@ module GraphQL::Batch
     end
 
     private
+
+    def expect_promise_key!(key)
+      raise "No promise with key #{key} to fulfill" unless promises_by_key.key?(key)
+    end
 
     def check_for_broken_promises
       promises_by_key.each do |key, promise|
