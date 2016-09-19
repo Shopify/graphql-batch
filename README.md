@@ -28,7 +28,7 @@ Require the library
 require 'graphql/batch'
 ```
 
-Define a custom loader, which is initialized with arguments that are used for grouping and an perform method for performing the batch load.
+Define a custom loader, which is initialized with arguments that are used for grouping and a perform method for performing the batch load.
 
 ```ruby
 class RecordLoader < GraphQL::Batch::Loader
