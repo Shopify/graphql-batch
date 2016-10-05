@@ -1,5 +1,8 @@
 # GraphQL::Batch
 
+[![Build Status](https://travis-ci.org/Shopify/graphql-batch.svg?branch=master)](https://travis-ci.org/Shopify/graphql-batch)
+[![Gem Version](https://badge.fury.io/rb/graphql-batch.svg)](https://rubygems.org/gems/graphql-batch)
+
 Provides an executor for the [`graphql` gem](https://github.com/rmosolgo/graphql-ruby) which allows queries to be batched.
 
 ## Installation
