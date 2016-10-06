@@ -252,7 +252,7 @@ class GraphQL::BatchTest < Minitest::Test
     result = Schema.execute(query_string)
     expected = {
       "data" => { "constant"=>"constant value", "load_execution_error" => nil },
-      "errors" => [{ "message" => "test error message", "locations"=>[{"line"=>3, "column"=>9}]}],
+      "errors" => [{ "message" => "test error message", "locations"=>[{"line"=>3, "column"=>9}], "path" => ["load_execution_error"] }],
     }
     assert_equal expected, result
   end
