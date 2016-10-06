@@ -121,7 +121,7 @@ GraphQL::Batch::Promise#sync can be used to wait for a promise to be resolved an
 
 Use GraphQL::Batch::Promise.all instead of Promise.all to be able to call sync on the returned promise.
 
-```
+```ruby
   def test_batch_query
     products = [products(:snowboard), products(:jacket)]
     query1 = RecordLoader.for(Product).load(products(:snowboard).id).then(&:title)
