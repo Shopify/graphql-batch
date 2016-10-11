@@ -41,6 +41,13 @@ ProductType = GraphQL::ObjectType.define do
     }
   end
 
+  field :nonNullButRaises do
+    type !types.String
+    resolve -> (_, _, _) {
+      raise GraphQL::ExecutionError, 'Error'
+    }
+  end
+
   field :variants do
     type types[!ProductVariantType]
     resolve -> (product, args, ctx) {
@@ -69,6 +76,13 @@ QueryType = GraphQL::ObjectType.define do
       RecordLoader.for(Product).load(1).then do |product|
         raise GraphQL::ExecutionError, "test error message"
       end
+    }
+  end
+
+  field :nonNullButRaises do
+    type !ProductType
+    resolve -> (_, _, _) {
+      raise GraphQL::ExecutionError, 'Error'
     }
   end
 
