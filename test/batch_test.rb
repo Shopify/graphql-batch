@@ -79,6 +79,33 @@ class GraphQL::BatchTest < Minitest::Test
     assert_equal ["Product/123"], queries
   end
 
+  def test_non_null_field_that_raises_on_nullable_parent
+    query_string = <<-GRAPHQL
+      {
+        product(id: "1") {
+          id
+          nonNullButRaises
+        }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string)
+    expected = { 'data' => { 'product' => nil }, 'errors' => [{ 'message' => 'Error', 'locations' => [{ 'line' => 4, 'column' => 11 }], 'path' => ['product', 'nonNullButRaises'] }] }
+    assert_equal expected, result
+  end
+
+  def test_non_null_field_that_raises_on_query_root
+    query_string = <<-GRAPHQL
+      {
+        nonNullButRaises {
+          id
+        }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string)
+    expected = { 'data' => nil, 'errors' => [{ 'message' => 'Error', 'locations' => [{ 'line' => 2, 'column' => 9 }], 'path' => ['nonNullButRaises'] }] }
+    assert_equal expected, result
+  end
+
   def test_batched_association_preload
     query_string = <<-GRAPHQL
       {
