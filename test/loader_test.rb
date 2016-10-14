@@ -112,4 +112,14 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     ])
     assert_equal [:a, 2], group.sync
   end
+
+  def test_load_after_perform
+    loader = EchoLoader.for
+    assert_equal :a, loader.load(:a).sync
+
+    err = assert_raises(RuntimeError) do
+      loader.load(:b).sync
+    end
+    assert_equal "Loader can't be used after batch load", err.message
+  end
 end

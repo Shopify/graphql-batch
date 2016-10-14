@@ -22,6 +22,9 @@ module GraphQL::Batch
     end
 
     def load(key)
+      if promises_by_key.frozen?
+        raise "Loader can't be used after batch load"
+      end
       promises_by_key[key] ||= Promise.new
     end
 
@@ -43,6 +46,7 @@ module GraphQL::Batch
     end
 
     def resolve
+      promises_by_key.freeze
       perform(keys)
       check_for_broken_promises
     rescue => err
