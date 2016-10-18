@@ -1,7 +1,10 @@
 module GraphQL::Batch
   class ExecutionStrategy < GraphQL::Query::SerialExecution
-    def execute(_, _, _)
+    def execute(_, _, query)
       as_promise(super).sync
+    rescue GraphQL::InvalidNullError => err
+      err.parent_error? || query.context.errors.push(err)
+      nil
     ensure
       GraphQL::Batch::Executor.current.clear
     end

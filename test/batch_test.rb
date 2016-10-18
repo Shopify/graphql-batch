@@ -106,6 +106,12 @@ class GraphQL::BatchTest < Minitest::Test
     assert_equal expected, result
   end
 
+  def test_non_null_field_promise_raises
+    result = Schema.execute('{ nonNullButPromiseRaises }')
+    expected = { 'data' => nil, 'errors' => [{ 'message' => 'Error', 'locations' => [{ 'line' => 1, 'column' => 3 }], 'path' => ['nonNullButPromiseRaises'] }] }
+    assert_equal expected, result
+  end
+
   def test_batched_association_preload
     query_string = <<-GRAPHQL
       {

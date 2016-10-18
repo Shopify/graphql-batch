@@ -38,3 +38,13 @@ class CounterLoader < GraphQL::Batch::Loader
     keys.each { |key| fulfill(key, @hash[:counter][0]) }
   end
 end
+
+class NilLoader < GraphQL::Batch::Loader
+  def self.load
+    self.for.load(nil)
+  end
+
+  def perform(nils)
+    nils.each { |key| fulfill(nil, nil) }
+  end
+end

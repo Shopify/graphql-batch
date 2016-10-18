@@ -86,6 +86,15 @@ QueryType = GraphQL::ObjectType.define do
     }
   end
 
+  field :nonNullButPromiseRaises do
+    type !types.String
+    resolve -> (_, _, _) {
+      NilLoader.load.then do
+        raise GraphQL::ExecutionError, 'Error'
+      end
+    }
+  end
+
   field :product do
     type ProductType
     argument :id, !types.ID
