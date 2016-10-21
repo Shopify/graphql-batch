@@ -27,6 +27,12 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     end
   end
 
+  class DerivedCacheKeyLoader < EchoLoader
+    def cache_key(load_key)
+      load_key.to_s
+    end
+  end
+
 
   def teardown
     GraphQL::Batch::Executor.current.clear
@@ -94,15 +100,15 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   def test_broken_promise_executor_check
     promise = GraphQL::Batch::Promise.new
     promise.wait
-    assert_equal promise.reason.class, GraphQL::Batch::BrokenPromiseError
-    assert_equal promise.reason.message, "Promise wasn't fulfilled after all queries were loaded"
+    assert_equal GraphQL::Batch::BrokenPromiseError, promise.reason.class
+    assert_equal "Promise wasn't fulfilled after all queries were loaded", promise.reason.message
   end
 
   def test_broken_promise_loader_check
     promise = BrokenLoader.load(1)
     promise.wait
-    assert_equal promise.reason.class, GraphQL::Batch::BrokenPromiseError
-    assert_equal promise.reason.message, "#{BrokenLoader.name} didn't fulfill promise for key 1"
+    assert_equal GraphQL::Batch::BrokenPromiseError, promise.reason.class
+    assert_equal "#{BrokenLoader.name} didn't fulfill promise for key 1", promise.reason.message
   end
 
   def test_loader_class_grouping
@@ -121,5 +127,9 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
       loader.load(:b).sync
     end
     assert_equal "Loader can't be used after batch load", err.message
+  end
+
+  def test_derived_cache_key
+    assert_equal [:a, :b, :a], DerivedCacheKeyLoader.load_many([:a, :b, "a"]).sync
   end
 end
