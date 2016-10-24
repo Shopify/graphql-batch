@@ -13,55 +13,78 @@ module GraphQL::Batch
       self.for.load_many(keys)
     end
 
-    def promises_by_key
-      @promises_by_key ||= {}
-    end
-
-    def keys
-      promises_by_key.keys
-    end
-
     def load(key)
-      if promises_by_key.frozen?
+      if queue.frozen?
         raise "Loader can't be used after batch load"
       end
-      promises_by_key[key] ||= Promise.new
+      cache[cache_key(key)] ||= begin
+        queue << key
+        Promise.new
+      end
     end
 
     def load_many(keys)
       Promise.all(keys.map { |key| load(key) })
     end
 
-    def fulfill(key, value)
-      promises_by_key.fetch(key).fulfill(value)
-    end
-
-    def fulfilled?(key)
-      promises_by_key.fetch(key).fulfilled?
-    end
-
-    # batch load keys and fulfill promises
-    def perform(keys)
-      raise NotImplementedError
-    end
-
-    def resolve
-      promises_by_key.freeze
-      perform(keys)
-      check_for_broken_promises
+    def resolve #:nodoc:
+      load_keys = queue.freeze
+      perform(load_keys)
+      check_for_broken_promises(load_keys)
     rescue => err
-      promises_by_key.each do |key, promise|
+      each_pending_promise(load_keys) do |key, promise|
         promise.reject(err)
       end
     end
 
+    protected
+
+    # Fulfill the key with provided value, for use in #perform
+    def fulfill(key, value)
+      promise_for(key).fulfill(value)
+    end
+
+    # Returns true when the key has already been fulfilled, otherwise returns false
+    def fulfilled?(key)
+      promise_for(key).fulfilled?
+    end
+
+    # Must override to load the keys and call #fulfill for each key
+    def perform(keys)
+      raise NotImplementedError
+    end
+
+    # Override to use a different key for the cache than the load key
+    def cache_key(load_key)
+      load_key
+    end
+
     private
 
-    def check_for_broken_promises
-      promises_by_key.each do |key, promise|
+    def cache
+      @cache ||= {}
+    end
+
+    def queue
+      @queue ||= []
+    end
+
+    def promise_for(load_key)
+      cache.fetch(cache_key(load_key))
+    end
+
+    def each_pending_promise(load_keys)
+      load_keys.each do |key|
+        promise = promise_for(key)
         if promise.pending?
-          promise.reject(BrokenPromiseError.new("#{self.class} didn't fulfill promise for key #{key.inspect}"))
+          yield key, promise
         end
+      end
+    end
+
+    def check_for_broken_promises(load_keys)
+      each_pending_promise(load_keys) do |key, promise|
+        promise.reject(BrokenPromiseError.new("#{self.class} didn't fulfill promise for key #{key.inspect}"))
       end
     end
   end
