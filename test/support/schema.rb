@@ -144,6 +144,9 @@ MutationType = GraphQL::ObjectType.define do
   end
 end
 
-Schema = GraphQL::Schema.new(query: QueryType, mutation: MutationType)
-Schema.query_execution_strategy = GraphQL::Batch::ExecutionStrategy
-Schema.mutation_execution_strategy = GraphQL::Batch::MutationExecutionStrategy
+Schema = GraphQL::Schema.define do
+  query QueryType
+  mutation MutationType
+  query_execution_strategy GraphQL::Batch::ExecutionStrategy
+  mutation_execution_strategy GraphQL::Batch::MutationExecutionStrategy
+end
