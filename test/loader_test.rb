@@ -121,12 +121,10 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
   def test_load_after_perform
     loader = EchoLoader.for
-    assert_equal :a, loader.load(:a).sync
-
-    err = assert_raises(RuntimeError) do
-      loader.load(:b).sync
-    end
-    assert_equal "Loader can't be used after batch load", err.message
+    promise1 = loader.load(:a)
+    assert_equal :a, promise1.sync
+    assert_equal :b, loader.load(:b).sync
+    assert_equal promise1, loader.load(:a)
   end
 
   def test_derived_cache_key
