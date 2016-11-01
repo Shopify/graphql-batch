@@ -121,12 +121,25 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
   def test_load_after_perform
     loader = EchoLoader.for
+    promise1 = loader.load(:a)
+    assert_equal :a, promise1.sync
+    assert_equal :b, loader.load(:b).sync
+    assert_equal promise1, loader.load(:a)
+  end
+
+  def test_load_on_different_loaders
+    loader = EchoLoader.for
     assert_equal :a, loader.load(:a).sync
+    loader2 = EchoLoader.for
+    promise = loader2.load(:b)
 
     err = assert_raises(RuntimeError) do
-      loader.load(:b).sync
+      loader.load(:c)
     end
-    assert_equal "Loader can't be used after batch load", err.message
+
+    assert_equal "load called on loader that wasn't registered with executor", err.message
+    assert_equal :b, promise.sync
+    assert_equal :c, loader.load(:c).sync
   end
 
   def test_derived_cache_key

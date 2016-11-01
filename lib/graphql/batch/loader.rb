@@ -2,7 +2,9 @@ module GraphQL::Batch
   class Loader
     def self.for(*group_args)
       loader_key = [self].concat(group_args)
-      Executor.current.loaders[loader_key] ||= new(*group_args)
+      Executor.current.loaders[loader_key] ||= new(*group_args).tap do |loader|
+        loader.loader_key = loader_key
+      end
     end
 
     def self.load(key)
@@ -13,9 +15,12 @@ module GraphQL::Batch
       self.for.load_many(keys)
     end
 
+    attr_accessor :loader_key
+
     def load(key)
-      if queue.frozen?
-        raise "Loader can't be used after batch load"
+      loader = Executor.current.loaders[loader_key] ||= self
+      if loader != self
+        raise "load called on loader that wasn't registered with executor"
       end
       cache[cache_key(key)] ||= begin
         queue << key
@@ -28,7 +33,8 @@ module GraphQL::Batch
     end
 
     def resolve #:nodoc:
-      load_keys = queue.freeze
+      load_keys = @queue
+      @queue = nil
       perform(load_keys)
       check_for_broken_promises(load_keys)
     rescue => err
