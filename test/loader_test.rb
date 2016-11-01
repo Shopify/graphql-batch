@@ -127,6 +127,21 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     assert_equal promise1, loader.load(:a)
   end
 
+  def test_load_on_different_loaders
+    loader = EchoLoader.for
+    assert_equal :a, loader.load(:a).sync
+    loader2 = EchoLoader.for
+    promise = loader2.load(:b)
+
+    err = assert_raises(RuntimeError) do
+      loader.load(:c)
+    end
+
+    assert_equal "load called on loader that wasn't registered with executor", err.message
+    assert_equal :b, promise.sync
+    assert_equal :c, loader.load(:c).sync
+  end
+
   def test_derived_cache_key
     assert_equal [:a, :b, :a], DerivedCacheKeyLoader.load_many([:a, :b, "a"]).sync
   end
