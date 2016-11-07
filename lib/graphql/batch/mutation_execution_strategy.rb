@@ -1,18 +1,18 @@
 module GraphQL::Batch
-  class MutationExecutionStrategy < GraphQL::Query::SerialExecution
-    class FieldResolution < GraphQL::Query::SerialExecution::FieldResolution
+  class MutationExecutionStrategy < GraphQL::Batch::ExecutionStrategy
+    class FieldResolution < GraphQL::Batch::ExecutionStrategy::FieldResolution
       def get_finished_value(raw_value)
+        return super if execution_context.strategy.disable_batching
+
         raw_value = GraphQL::Batch::Promise.resolve(raw_value).sync
 
-        context = execution_context.query.context
-        old_execution_strategy = context.execution_strategy
+        execution_context.strategy.disable_batching = true
         begin
-          context.execution_strategy = GraphQL::Batch::ExecutionStrategy.new
           result = super(raw_value)
           GraphQL::Batch::Executor.current.wait_all
           result
         ensure
-          context.execution_strategy = old_execution_strategy
+          execution_context.strategy.disable_batching = false
         end
       end
     end

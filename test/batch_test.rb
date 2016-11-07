@@ -310,4 +310,34 @@ class GraphQL::BatchTest < Minitest::Test
     }
     assert_equal expected, result
   end
+
+  def test_mutation_batch_subselection_execution
+    query_string = <<-GRAPHQL
+      mutation {
+        mutation1: no_op {
+          product1: product(id: "1") { id, title }
+          product2: product(id: "2") { id, title }
+        }
+        mutation2: no_op {
+          product1: product(id: "2") { id, title }
+          product2: product(id: "3") { id, title }
+        }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string)
+    expected = {
+      "data" => {
+        "mutation1" => {
+          "product1" => { "id" => "1", "title" => "Shirt" },
+          "product2" => { "id" => "2", "title" => "Pants" },
+        },
+        "mutation2" => {
+          "product1" => { "id" => "2", "title" => "Pants" },
+          "product2" => { "id" => "3", "title" => "Sweater" },
+        }
+      }
+    }
+    assert_equal expected, result
+    assert_equal ["Product/1,2", "Product/2,3"], queries
+  end
 end
