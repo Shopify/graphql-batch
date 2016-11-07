@@ -142,6 +142,10 @@ MutationType = GraphQL::ObjectType.define do
   field :counter_loader, !types.Int do
     resolve ->(_, _, ctx) { CounterLoader.for(ctx).load }
   end
+
+  field :no_op, !QueryType do
+    resolve ->(_, _, ctx) { Hash.new }
+  end
 end
 
 Schema = GraphQL::Schema.define do
