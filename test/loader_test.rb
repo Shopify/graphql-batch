@@ -145,4 +145,9 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   def test_derived_cache_key
     assert_equal [:a, :b, :a], DerivedCacheKeyLoader.load_many([:a, :b, "a"]).sync
   end
+
+  def test_loader_for_without_load
+    loader = EchoLoader.for
+    GraphQL::Batch::Executor.current.wait_all
+  end
 end
