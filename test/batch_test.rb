@@ -64,6 +64,17 @@ class GraphQL::BatchTest < Minitest::Test
     assert_equal ["Product/1,2"], queries
   end
 
+  def test_batched_find_by_id_nested_items
+    query_string = <<-GRAPHQL
+      {
+        product1: product(id: "1") { variants { id } }
+        product2: product(id: "2") { variants { id } }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string)
+    assert_equal ["Product/1,2", "Product/1,2/variants"], queries
+  end
+
   def test_record_missing
     query_string = <<-GRAPHQL
       {
