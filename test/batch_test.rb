@@ -93,6 +93,27 @@ class GraphQL::BatchTest < Minitest::Test
     assert_equal expected, result
   end
 
+  def test_non_null_field_that_raises_on_non_null_parent
+    query_string = <<-GRAPHQL
+      {
+        product(id: "1") {
+          id
+          nullableSelf {
+            nonNullButReturnsNil
+          }
+        }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string)
+    expected = {
+      'data' => {"product" => { "id" => "1", "nullableSelf" => nil } },
+      'errors' => [
+        {"message"=>"Cannot return null for non-nullable field Product.Product.nonNullButReturnsNil"}
+      ]
+    }
+    assert_equal expected, result
+  end
+
   def test_non_null_field_that_raises_on_query_root
     query_string = <<-GRAPHQL
       {

@@ -48,6 +48,13 @@ ProductType = GraphQL::ObjectType.define do
     }
   end
 
+  field :nonNullButReturnsNil do
+    type !types.String
+    resolve -> (_, _, _) {
+      NilLoader.load.then { nil }
+    }
+  end
+
   field :variants do
     type types[!ProductVariantType]
     resolve -> (product, args, ctx) {
@@ -61,6 +68,10 @@ ProductType = GraphQL::ObjectType.define do
       query = AssociationLoader.for(Product, :variants).load(product)
       Promise.all([query]).then { query.value.size }
     }
+  end
+
+  field :nullableSelf, ProductType do
+    resolve ->(o, a, c) { o }
   end
 end
 
