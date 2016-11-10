@@ -19,19 +19,16 @@ module GraphQL::Batch
       @loading = false
     end
 
+    def resolve(loader)
+      with_loading(true) { loader.resolve }
+    end
+
     def shift
       @loaders.shift.last
     end
 
     def tick
-      with_loading(true) { shift.resolve }
-    end
-
-    def wait(promise)
-      tick while promise.pending? && !loaders.empty?
-      if promise.pending?
-        promise.reject(::Promise::BrokenError.new("Promise wasn't fulfilled after all queries were loaded"))
-      end
+      resolve(shift)
     end
 
     def wait_all

@@ -79,9 +79,10 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
   def test_then_error
     query = GroupCountLoader.for("single").load(:a).then { raise "oops" }
-    assert_raises(RuntimeError, 'oops') do
+    err = assert_raises(RuntimeError) do
       query.sync
     end
+    assert_equal 'oops', err.message
   end
 
   def test_on_reject_without_error
@@ -95,13 +96,6 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
   def test_query_in_callback
     assert_equal 5, EchoLoader.load(4).then { |value| EchoLoader.load(value + 1) }.sync
-  end
-
-  def test_broken_promise_executor_check
-    promise = GraphQL::Batch::Promise.new
-    promise.wait
-    assert_equal GraphQL::Batch::BrokenPromiseError, promise.reason.class
-    assert_equal "Promise wasn't fulfilled after all queries were loaded", promise.reason.message
   end
 
   def test_broken_promise_loader_check
@@ -131,15 +125,12 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     loader = EchoLoader.for
     assert_equal :a, loader.load(:a).sync
     loader2 = EchoLoader.for
+
     promise = loader2.load(:b)
+    promise2 = loader.load(:c)
 
-    err = assert_raises(RuntimeError) do
-      loader.load(:c)
-    end
-
-    assert_equal "load called on loader that wasn't registered with executor", err.message
     assert_equal :b, promise.sync
-    assert_equal :c, loader.load(:c).sync
+    assert_equal :c, promise2.sync
   end
 
   def test_derived_cache_key
@@ -149,5 +140,16 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   def test_loader_for_without_load
     loader = EchoLoader.for
     GraphQL::Batch::Executor.current.wait_all
+  end
+
+  def test_loader_without_executor
+    loader1 = GroupCountLoader.new('one')
+    loader2 = GroupCountLoader.new('two')
+    group = Promise.all([
+      loader2.load(:a),
+      loader1.load(:a),
+      loader2.load(:b),
+    ])
+    assert_equal [2, 1, 2], group.sync
   end
 end

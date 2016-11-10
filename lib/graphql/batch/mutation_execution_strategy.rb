@@ -12,7 +12,7 @@ module GraphQL::Batch
         begin
           result = super(raw_value)
           GraphQL::Batch::Executor.current.wait_all
-          result
+          Promise.sync(result)
         ensure
           execution_context.strategy.enable_batching = false
         end

@@ -21,7 +21,7 @@ module GraphQL::Batch
         end
       end
       return result if all_promises.empty?
-      Promise.all(all_promises).then { result }
+      ::Promise.all(all_promises).then { result }
     end
 
     def each_promise(obj, &block)
