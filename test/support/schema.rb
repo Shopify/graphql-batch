@@ -163,5 +163,5 @@ end
 Schema = GraphQL::Schema.define do
   query QueryType
   mutation MutationType
-  boxed_value(GraphQL::Batch::Promise, :sync)
+  lazy_resolve(GraphQL::Batch::Promise, :sync)
 end
