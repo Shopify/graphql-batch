@@ -119,7 +119,11 @@ class GraphQL::BatchTest < Minitest::Test
     expected = {
       'data' => {"product" => { "id" => "1", "nullableSelf" => nil } },
       'errors' => [
-        {"message"=>"Cannot return null for non-nullable field Product.Product.nonNullButReturnsNil"}
+        {
+          "message"=>"Cannot return null for non-nullable field Product.nonNullButReturnsNil",
+          "locations"=>[{"line"=>5, "column"=>13}],
+          "path"=>["product", "nullableSelf", "nonNullButReturnsNil"],
+        }
       ]
     }
     assert_equal expected, result
