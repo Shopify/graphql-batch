@@ -35,8 +35,9 @@ ProductType = GraphQL::ObjectType.define do
         end
         Promise.all(variant_image_queries).then(&:flatten)
       end
-      Promise.all([product_image_query, variant_images_query]).then do
-        [product_image_query.value] + variant_images_query.value
+      GraphQL::Batch::Promise.all([product_image_query, variant_images_query]).then do
+        images = [product_image_query.value] + variant_images_query.value
+        images
       end
     }
   end
@@ -45,6 +46,13 @@ ProductType = GraphQL::ObjectType.define do
     type !types.String
     resolve -> (_, _, _) {
       raise GraphQL::ExecutionError, 'Error'
+    }
+  end
+
+  field :nonNullButReturnsNil do
+    type !types.String
+    resolve -> (_, _, _) {
+      NilLoader.load.then { nil }
     }
   end
 
@@ -59,8 +67,12 @@ ProductType = GraphQL::ObjectType.define do
     type types.Int
     resolve -> (product, args, ctx) {
       query = AssociationLoader.for(Product, :variants).load(product)
-      Promise.all([query]).then { query.value.size }
+      GraphQL::Batch::Promise.all([query]).then { query.value.size }
     }
+  end
+
+  field :nullableSelf, ProductType do
+    resolve ->(o, a, c) { o }
   end
 end
 
@@ -151,6 +163,5 @@ end
 Schema = GraphQL::Schema.define do
   query QueryType
   mutation MutationType
-  query_execution_strategy GraphQL::Batch::ExecutionStrategy
-  mutation_execution_strategy GraphQL::Batch::MutationExecutionStrategy
+  lazy_resolve(GraphQL::Batch::Promise, :sync)
 end

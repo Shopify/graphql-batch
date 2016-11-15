@@ -64,6 +64,17 @@ class GraphQL::BatchTest < Minitest::Test
     assert_equal ["Product/1,2"], queries
   end
 
+  def test_batched_find_by_id_nested_items
+    query_string = <<-GRAPHQL
+      {
+        product1: product(id: "1") { variants { id } }
+        product2: product(id: "2") { variants { id } }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string)
+    assert_equal ["Product/1,2", "Product/1,2/variants"], queries
+  end
+
   def test_record_missing
     query_string = <<-GRAPHQL
       {
@@ -90,6 +101,31 @@ class GraphQL::BatchTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = { 'data' => { 'product' => nil }, 'errors' => [{ 'message' => 'Error', 'locations' => [{ 'line' => 4, 'column' => 11 }], 'path' => ['product', 'nonNullButRaises'] }] }
+    assert_equal expected, result
+  end
+
+  def test_non_null_field_that_raises_on_non_null_parent
+    query_string = <<-GRAPHQL
+      {
+        product(id: "1") {
+          id
+          nullableSelf {
+            nonNullButReturnsNil
+          }
+        }
+      }
+    GRAPHQL
+    result = Schema.execute(query_string)
+    expected = {
+      'data' => {"product" => { "id" => "1", "nullableSelf" => nil } },
+      'errors' => [
+        {
+          "message"=>"Cannot return null for non-nullable field Product.nonNullButReturnsNil",
+          "locations"=>[{"line"=>5, "column"=>13}],
+          "path"=>["product", "nullableSelf", "nonNullButReturnsNil"],
+        }
+      ]
+    }
     assert_equal expected, result
   end
 
