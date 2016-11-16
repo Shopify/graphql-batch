@@ -3,7 +3,7 @@ module GraphQL::Batch
     attr_accessor :disable_batching
 
     def execute(_, _, query)
-      as_promise(super).sync
+      Promise.sync(as_promise_unless_resolved(super))
     rescue GraphQL::InvalidNullError => err
       err.parent_error? || query.context.errors.push(err)
       nil
@@ -12,10 +12,6 @@ module GraphQL::Batch
     end
 
     private
-
-    def as_promise(result)
-      GraphQL::Batch::Promise.resolve(as_promise_unless_resolved(result))
-    end
 
     def as_promise_unless_resolved(result)
       all_promises = []

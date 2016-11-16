@@ -44,7 +44,7 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   def test_query_group
-    group = GraphQL::Batch::Promise.all([
+    group = Promise.all([
       GroupCountLoader.for('two').load(:a),
       GroupCountLoader.for('one').load(:a),
       GroupCountLoader.for('two').load(:b),
@@ -57,15 +57,15 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   def test_empty_group_query
-    assert_equal [], GraphQL::Batch::Promise.all([]).sync
+    assert_equal [], Promise.all([]).sync
   end
 
   def test_group_query_with_non_queries
-    assert_equal [1, :a, 'b'], GraphQL::Batch::Promise.all([1, :a, 'b']).sync
+    assert_equal [1, :a, 'b'], Promise.all([1, :a, 'b']).sync
   end
 
   def test_group_query_with_some_queries
-    group = GraphQL::Batch::Promise.all([
+    group = Promise.all([
       GroupCountLoader.for("two").load(:a),
       'one',
       GroupCountLoader.for("two").load(:b),
@@ -112,7 +112,7 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   def test_loader_class_grouping
-    group = GraphQL::Batch::Promise.all([
+    group = Promise.all([
       EchoLoader.load(:a),
       IncrementLoader.load(1),
     ])
