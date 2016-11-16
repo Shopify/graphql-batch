@@ -109,26 +109,13 @@ end
 
 ## Unit Testing
 
-GraphQL::Batch::Promise#sync can be used to wait for a promise to be resolved and return its result. This can be useful for debugging and unit testing loaders.
+Promise#sync can be used to wait for a promise to be resolved and return its result. This can be useful for debugging and unit testing loaders.
 
 ```ruby
   def test_single_query
     product = products(:snowboard)
     query = RecordLoader.for(Product).load(args["id"]).then(&:title)
     assert_equal product.title, query.sync
-  end
-```
-
-Use GraphQL::Batch::Promise.all instead of Promise.all to be able to call sync on the returned promise.
-
-```ruby
-  def test_batch_query
-    products = [products(:snowboard), products(:jacket)]
-    query1 = RecordLoader.for(Product).load(products(:snowboard).id).then(&:title)
-    query2 = RecordLoader.for(Product).load(products(:jacket).id).then(&:title)
-    results = GraphQL::Batch::Promise.all([query1, query2]).sync
-    assert_equal products(:snowboard).title, results[0]
-    assert_equal products(:jacket).title, results[1]
   end
 ```
 
