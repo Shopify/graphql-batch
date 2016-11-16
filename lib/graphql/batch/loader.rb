@@ -91,7 +91,7 @@ module GraphQL::Batch
 
     def check_for_broken_promises(load_keys)
       each_pending_promise(load_keys) do |key, promise|
-        promise.reject(BrokenPromiseError.new("#{self.class} didn't fulfill promise for key #{key.inspect}"))
+        promise.reject(::Promise::BrokenError.new("#{self.class} didn't fulfill promise for key #{key.inspect}"))
       end
     end
   end

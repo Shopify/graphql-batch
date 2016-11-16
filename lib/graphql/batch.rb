@@ -3,7 +3,7 @@ require "promise.rb"
 
 module GraphQL
   module Batch
-    BrokenPromiseError = Promise::BrokenError
+    BrokenPromiseError = ::Promise::BrokenError
   end
 end
 
