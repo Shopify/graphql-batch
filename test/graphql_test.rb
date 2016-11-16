@@ -12,9 +12,13 @@ class GraphQL::GraphQLTest < Minitest::Test
     QueryNotifier.subscriber = nil
   end
 
+  def schema
+    ::Schema
+  end
+
   def test_no_queries
     query_string = '{ constant }'
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = {
       "data" => {
         "constant" => "constant value"
@@ -33,7 +37,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = {
       "data" => {
         "product" => {
@@ -53,7 +57,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         product2: product(id: "2") { id, title }
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = {
       "data" => {
         "product1" => { "id" => "1", "title" => "Shirt" },
@@ -73,7 +77,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = { "data" => { "product" => nil } }
     assert_equal expected, result
     assert_equal ["Product/123"], queries
@@ -88,7 +92,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = { 'data' => { 'product' => nil }, 'errors' => [{ 'message' => 'Error', 'locations' => [{ 'line' => 4, 'column' => 11 }], 'path' => ['product', 'nonNullButRaises'] }] }
     assert_equal expected, result
   end
@@ -101,13 +105,13 @@ class GraphQL::GraphQLTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = { 'data' => nil, 'errors' => [{ 'message' => 'Error', 'locations' => [{ 'line' => 2, 'column' => 9 }], 'path' => ['nonNullButRaises'] }] }
     assert_equal expected, result
   end
 
   def test_non_null_field_promise_raises
-    result = Schema.execute('{ nonNullButPromiseRaises }')
+    result = schema.execute('{ nonNullButPromiseRaises }')
     expected = { 'data' => nil, 'errors' => [{ 'message' => 'Error', 'locations' => [{ 'line' => 1, 'column' => 3 }], 'path' => ['nonNullButPromiseRaises'] }] }
     assert_equal expected, result
   end
@@ -125,7 +129,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = {
       "data" => {
         "products" => [
@@ -167,7 +171,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = {
       "data" => {
         "products" => [
@@ -203,7 +207,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         product_variants_count(id: "2")
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = {
       "data" => {
         "product_variants_count" => 3
@@ -221,7 +225,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = {
       "data" => {
         "product" => {
@@ -249,7 +253,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = {
       "data" => {
         "products" => [
@@ -282,7 +286,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         load_execution_error
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = {
       "data" => { "constant"=>"constant value", "load_execution_error" => nil },
       "errors" => [{ "message" => "test error message", "locations"=>[{"line"=>3, "column"=>9}], "path" => ["load_execution_error"] }],
@@ -299,7 +303,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         incr2: increment_counter { value, load_value }
       }
     GRAPHQL
-    result = Schema.execute(query_string, context: { counter: [0] })
+    result = schema.execute(query_string, context: { counter: [0] })
     expected = {
       "data" => {
         "count1" => 0,
@@ -324,7 +328,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         }
       }
     GRAPHQL
-    result = Schema.execute(query_string)
+    result = schema.execute(query_string)
     expected = {
       "data" => {
         "mutation1" => {
