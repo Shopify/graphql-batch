@@ -4,7 +4,7 @@ module GraphQL::Batch
       def get_finished_value(raw_value)
         return super if execution_context.strategy.disable_batching
 
-        raw_value = GraphQL::Batch::Promise.resolve(raw_value).sync
+        raw_value = Promise.sync(raw_value)
 
         execution_context.strategy.disable_batching = true
         begin
