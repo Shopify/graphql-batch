@@ -4,6 +4,17 @@ require "promise.rb"
 module GraphQL
   module Batch
     BrokenPromiseError = ::Promise::BrokenError
+    class NestedError < StandardError; end
+
+    def self.batch
+      raise NestedError if GraphQL::Batch::Executor.current
+      begin
+        GraphQL::Batch::Executor.current = GraphQL::Batch::Executor.new
+        Promise.sync(yield)
+      ensure
+        GraphQL::Batch::Executor.current = nil
+      end
+    end
   end
 end
 

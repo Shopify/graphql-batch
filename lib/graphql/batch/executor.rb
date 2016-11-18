@@ -4,7 +4,11 @@ module GraphQL::Batch
     private_constant :THREAD_KEY
 
     def self.current
-      Thread.current[THREAD_KEY] ||= new
+      Thread.current[THREAD_KEY]
+    end
+
+    def self.current=(executor)
+      Thread.current[THREAD_KEY] = executor
     end
 
     attr_reader :loaders

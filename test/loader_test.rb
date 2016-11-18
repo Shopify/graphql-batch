@@ -33,9 +33,12 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     end
   end
 
+  def setup
+    GraphQL::Batch::Executor.current = GraphQL::Batch::Executor.new
+  end
 
   def teardown
-    GraphQL::Batch::Executor.current.clear
+    GraphQL::Batch::Executor.current = nil
   end
 
 

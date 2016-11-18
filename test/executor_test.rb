@@ -1,6 +1,14 @@
 require_relative 'test_helper'
 
 class GraphQL::Batch::ExecutorTest < Minitest::Test
+  def setup
+    GraphQL::Batch::Executor.current = GraphQL::Batch::Executor.new
+  end
+
+  def teardown
+    GraphQL::Batch::Executor.current = nil
+  end
+
   def test_loading_flag_when_not_loading
     assert_equal false, GraphQL::Batch::Executor.current.loading
   end

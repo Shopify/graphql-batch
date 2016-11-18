@@ -109,13 +109,19 @@ end
 
 ## Unit Testing
 
-Promise#sync can be used to wait for a promise to be resolved and return its result. This can be useful for debugging and unit testing loaders.
+Your loaders can be tested outside of a GraphQL query by doing the
+batch loads in a block passed to GraphQL::Batch.batch.  That method
+will set up thread-local state to store the loaders, batch load any
+promise returned from the block then clear the thread-local state
+to avoid leaking state between tests.
 
 ```ruby
   def test_single_query
     product = products(:snowboard)
-    query = RecordLoader.for(Product).load(args["id"]).then(&:title)
-    assert_equal product.title, query.sync
+    title = GraphQL::Batch.batch do
+      RecordLoader.for(Product).load(product.id).then(&:title)
+    end
+    assert_equal product.title, title
   end
 ```
 
