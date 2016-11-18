@@ -1,7 +1,5 @@
 module GraphQL::Batch
   class ExecutionStrategy < GraphQL::Query::SerialExecution
-    attr_accessor :disable_batching
-
     def execute(_, _, query)
       Promise.sync(as_promise_unless_resolved(super))
     rescue GraphQL::InvalidNullError => err
