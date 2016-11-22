@@ -1,15 +1,16 @@
 module GraphQL::Batch
   class ExecutionStrategy < GraphQL::Query::SerialExecution
     def execute(_, _, query)
-      deep_sync(super)
+      GraphQL::Batch.batch do
+        as_promise_unless_resolved(super)
+      end
     rescue GraphQL::InvalidNullError => err
       err.parent_error? || query.context.errors.push(err)
       nil
-    ensure
-      GraphQL::Batch::Executor.current.clear
     end
 
-    def deep_sync(result)
+    # Needed for MutationExecutionStrategy
+    def deep_sync(result) #:nodoc:
       Promise.sync(as_promise_unless_resolved(result))
     end
 
