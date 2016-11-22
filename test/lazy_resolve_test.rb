@@ -1,5 +1,6 @@
 require_relative 'graphql_test'
 
+# Feature detection to only run these tests against graphql-ruby master
 has_lazy_resolve = nil
 GraphQL::Schema.define do
   has_lazy_resolve = respond_to?(:lazy_resolve)
