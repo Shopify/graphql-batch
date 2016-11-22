@@ -2,8 +2,10 @@ module GraphQL::Batch
   class Loader
     def self.for(*group_args)
       loader_key = [self].concat(group_args)
-      Executor.current.loaders[loader_key] ||= new(*group_args).tap do |loader|
+      executor = Executor.current
+      executor.loaders[loader_key] ||= new(*group_args).tap do |loader|
         loader.loader_key = loader_key
+        loader.executor = executor
       end
     end
 
@@ -15,21 +17,17 @@ module GraphQL::Batch
       self.for.load_many(keys)
     end
 
-    attr_accessor :loader_key
+    attr_accessor :loader_key, :executor
 
     def load(key)
-      loader = Executor.current.loaders[loader_key] ||= self
-      if loader != self
-        raise "load called on loader that wasn't registered with executor"
-      end
       cache[cache_key(key)] ||= begin
         queue << key
-        Promise.new
+        Promise.new.tap { |promise| promise.source = self }
       end
     end
 
     def load_many(keys)
-      Promise.all(keys.map { |key| load(key) })
+      ::Promise.all(keys.map { |key| load(key) })
     end
 
     def resolve #:nodoc:
@@ -41,6 +39,16 @@ module GraphQL::Batch
     rescue => err
       each_pending_promise(load_keys) do |key, promise|
         promise.reject(err)
+      end
+    end
+
+    # For Promise#sync
+    def wait #:nodoc:
+      if executor
+        executor.loaders.delete(loader_key)
+        executor.resolve(self)
+      else
+        resolve
       end
     end
 

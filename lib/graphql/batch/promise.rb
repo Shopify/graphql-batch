@@ -1,11 +1,8 @@
 module GraphQL::Batch
   class Promise < ::Promise
-    def wait
-      Executor.current.wait(self)
-    end
-
     def defer
-      Executor.current.defer { super }
+      executor = Executor.current
+      executor ? executor.defer { super } : super
     end
   end
 end
