@@ -49,7 +49,9 @@ end
 Use the batch execution strategy with your schema
 
 ```ruby
-MySchema = GraphQL::Schema.new(query: MyQueryType)
+MySchema = GraphQL::Schema.define do
+  query MyQueryType
+end
 MySchema.query_execution_strategy = GraphQL::Batch::ExecutionStrategy
 MySchema.mutation_execution_strategy = GraphQL::Batch::MutationExecutionStrategy
 ```
