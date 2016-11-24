@@ -133,7 +133,7 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/Shopify/graphql-batch.
+See our [contributing guidelines](CONTRIBUTING.md) for more information.
 
 ## License
 
