@@ -48,6 +48,19 @@ end
 
 Use the batch execution strategy with your schema
 
+- When running `graphql` gem versions `>= 1.3.0`:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  query MyQueryType
+  
+  lazy_resolve(Promise, :sync)
+  instrument(:query, GraphQL::Batch::Setup)
+end
+```
+
+- When running `graphql` gem versions `< 1.3.0`:
+
 ```ruby
 MySchema = GraphQL::Schema.define do
   query MyQueryType
