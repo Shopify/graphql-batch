@@ -1,4 +1,7 @@
 require "graphql"
+if Gem::Version.new(GraphQL::VERSION) < Gem::Version.new("1.3")
+  warn "graphql gem versions less than 1.3 are deprecated, upgrade so lazy_resolve can be used"
+end
 require "promise.rb"
 
 module GraphQL
