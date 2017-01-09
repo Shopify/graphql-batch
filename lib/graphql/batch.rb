@@ -15,6 +15,9 @@ module GraphQL
         GraphQL::Batch::Executor.current = nil
       end
     end
+
+    autoload :ExecutionStrategy, 'graphql/batch/execution_strategy'
+    autoload :MutationExecutionStrategy, 'graphql/batch/mutation_execution_strategy'
   end
 end
 
@@ -23,9 +26,3 @@ require_relative "batch/loader"
 require_relative "batch/executor"
 require_relative "batch/promise"
 require_relative "batch/setup"
-
-# Allow custom execution strategies to be removed upstream
-if defined?(GraphQL::Query::SerialExecution)
-  require_relative "batch/execution_strategy"
-  require_relative "batch/mutation_execution_strategy"
-end
