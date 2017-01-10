@@ -46,9 +46,7 @@ class RecordLoader < GraphQL::Batch::Loader
 end
 ```
 
-Use the batch execution strategy with your schema
-
-- When running `graphql` gem versions `>= 1.3.0`:
+Use lazy execution and instrumentation by `GraphQL::Batch` in your schema
 
 ```ruby
 MySchema = GraphQL::Schema.define do
@@ -57,16 +55,6 @@ MySchema = GraphQL::Schema.define do
   lazy_resolve(Promise, :sync)
   instrument(:query, GraphQL::Batch::Setup)
 end
-```
-
-- When running `graphql` gem versions `< 1.3.0`:
-
-```ruby
-MySchema = GraphQL::Schema.define do
-  query MyQueryType
-end
-MySchema.query_execution_strategy = GraphQL::Batch::ExecutionStrategy
-MySchema.mutation_execution_strategy = GraphQL::Batch::MutationExecutionStrategy
 ```
 
 The loader class can be used from the resolve proc for a graphql field by calling `.for` with the grouping arguments to get a loader instance, then call `.load` on that instance with the key to load.
