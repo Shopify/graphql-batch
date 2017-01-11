@@ -1,3 +1,5 @@
+warn "GraphQL::Batch::ExecutionStrategy is deprecated, instead use `lazy_resolve(Promise, :sync)` and `instrument(:query, GraphQL::Batch::Setup)` in GraphQL::Schema.define"
+
 module GraphQL::Batch
   class ExecutionStrategy < GraphQL::Query::SerialExecution
     def execute(_, _, query)

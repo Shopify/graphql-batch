@@ -1,3 +1,5 @@
+require_relative "execution_strategy"
+
 module GraphQL::Batch
   class MutationExecutionStrategy < GraphQL::Batch::ExecutionStrategy
     attr_accessor :enable_batching

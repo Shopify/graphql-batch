@@ -151,6 +151,7 @@ end
 Schema = GraphQL::Schema.define do
   query QueryType
   mutation MutationType
-  query_execution_strategy GraphQL::Batch::ExecutionStrategy
-  mutation_execution_strategy GraphQL::Batch::MutationExecutionStrategy
+
+  lazy_resolve(Promise, :sync)
+  instrument(:query, GraphQL::Batch::Setup)
 end
