@@ -52,8 +52,7 @@ Use lazy execution and instrumentation by `GraphQL::Batch` in your schema
 MySchema = GraphQL::Schema.define do
   query MyQueryType
 
-  lazy_resolve(Promise, :sync)
-  instrument(:query, GraphQL::Batch::Setup)
+  use_graphql_batch
 end
 ```
 

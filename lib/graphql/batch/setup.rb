@@ -12,3 +12,12 @@ module GraphQL::Batch
     end
   end
 end
+
+GraphQL::Schema.accepts_definitions(
+  use_graphql_batch: ->(schema) {
+    return if schema.metadata[:graphql_batch_setup]
+    schema.instrument(:query, GraphQL::Batch::Setup)
+    schema.lazy_methods.set(Promise, :sync)
+    schema.metadata[:graphql_batch_setup] = true
+  }
+)
