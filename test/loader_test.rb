@@ -41,7 +41,6 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     GraphQL::Batch::Executor.current = nil
   end
 
-
   def test_single_query
     assert_equal 1, GroupCountLoader.for('single').load('first').sync
   end
