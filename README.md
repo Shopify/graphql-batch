@@ -46,14 +46,23 @@ class RecordLoader < GraphQL::Batch::Loader
 end
 ```
 
-Use lazy execution and instrumentation by `GraphQL::Batch` in your schema
+Use `GraphQL::Batch` as a plugin in your schema (for graphql >= `1.5.0`).
 
 ```ruby
 MySchema = GraphQL::Schema.define do
   query MyQueryType
 
-  lazy_resolve(Promise, :sync)
-  instrument(:query, GraphQL::Batch::Setup)
+  use GraphQL::Batch
+end
+```
+
+For pre `1.5.0` versions:
+
+```ruby
+MySchema = GraphQL::Schema.define do
+  query MyQueryType
+
+  GraphQL::Batch.use(self)
 end
 ```
 

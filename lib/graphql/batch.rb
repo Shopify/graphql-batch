@@ -19,6 +19,11 @@ module GraphQL
       end
     end
 
+    def self.use(schema_defn)
+      schema_defn.instrument(:query, GraphQL::Batch::Setup)
+      schema_defn.lazy_resolve(::Promise, :sync)
+    end
+
     autoload :ExecutionStrategy, 'graphql/batch/execution_strategy'
     autoload :MutationExecutionStrategy, 'graphql/batch/mutation_execution_strategy'
   end
