@@ -9,7 +9,13 @@ class GraphQL::ExecutionStrategyTest < GraphQL::GraphQLTest
     mutation_execution_strategy GraphQL::Batch::MutationExecutionStrategy
   end
 
-  def schema
-    LegacySchema
+  class ExecutorWithSilencedWarn < GraphQL::Query::Executor
+    def warn(message)
+    end
+  end
+
+  def schema_execute(query_string, **kwargs)
+    query = GraphQL::Query.new(LegacySchema, query_string, **kwargs)
+    ExecutorWithSilencedWarn.new(query).result
   end
 end
