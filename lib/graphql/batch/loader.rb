@@ -3,7 +3,7 @@ module GraphQL::Batch
     class NoExecutorError < StandardError; end
 
     def self.for(*group_args)
-      loader_key = [self].concat(group_args)
+      loader_key = loader_key_for(*group_args)
       executor = Executor.current
 
       unless executor
@@ -16,6 +16,10 @@ module GraphQL::Batch
         loader.loader_key = loader_key
         loader.executor = executor
       end
+    end
+
+    def self.loader_key_for(*group_args)
+      [self].concat(group_args)
     end
 
     def self.load(key)
