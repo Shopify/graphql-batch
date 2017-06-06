@@ -44,8 +44,8 @@ module GraphQL::Batch
     end
 
     def resolve #:nodoc:
+      return if resolved?
       load_keys = queue
-      return if load_keys.empty?
       @queue = nil
       perform(load_keys)
       check_for_broken_promises(load_keys)
@@ -63,6 +63,10 @@ module GraphQL::Batch
       else
         resolve
       end
+    end
+
+    def resolved?
+      @queue.nil? || @queue.empty?
     end
 
     protected
