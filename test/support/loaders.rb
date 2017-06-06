@@ -26,16 +26,12 @@ class AssociationLoader < GraphQL::Batch::Loader
 end
 
 class CounterLoader < GraphQL::Batch::Loader
-  def initialize(hash)
-    @hash = hash
-  end
-
-  def load(key=Object.new)
-    super(key)
+  def cache_key(counter_array)
+    counter_array.object_id
   end
 
   def perform(keys)
-    keys.each { |key| fulfill(key, @hash[:counter][0]) }
+    keys.each { |counter_array| fulfill(counter_array, counter_array[0]) }
   end
 end
 

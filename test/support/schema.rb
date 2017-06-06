@@ -128,7 +128,7 @@ CounterType = GraphQL::ObjectType.define do
   end
 
   field :load_value, !types.Int do
-    resolve ->(_, _, ctx) { CounterLoader.for(ctx).load }
+    resolve ->(_, _, ctx) { CounterLoader.load(ctx[:counter]) }
   end
 end
 
@@ -136,11 +136,13 @@ MutationType = GraphQL::ObjectType.define do
   name "Mutation"
 
   field :increment_counter, !CounterType do
-    resolve ->(_, _, ctx) { ctx[:counter][0] += 1; CounterLoader.for(ctx).load }
+    resolve ->(_, _, ctx) { ctx[:counter][0] += 1; CounterLoader.load(ctx[:counter]) }
   end
 
   field :counter_loader, !types.Int do
-    resolve ->(_, _, ctx) { CounterLoader.for(ctx).load }
+    resolve ->(_, _, ctx) {
+      CounterLoader.load(ctx[:counter])
+    }
   end
 
   field :no_op, !QueryType do
