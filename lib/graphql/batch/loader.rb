@@ -12,10 +12,7 @@ module GraphQL::Batch
           " `GraphQL::Batch::Setup` as a query instrumenter if using with `graphql-ruby`"
       end
 
-      executor.loaders[loader_key] ||= new(*group_args).tap do |loader|
-        loader.loader_key = loader_key
-        loader.executor = executor
-      end
+      executor.loader(loader_key) { new(*group_args) }
     end
 
     def self.loader_key_for(*group_args)

@@ -11,8 +11,6 @@ module GraphQL::Batch
       Thread.current[THREAD_KEY] = executor
     end
 
-    attr_reader :loaders
-
     # Set to true when performing a batch query, otherwise, it is false.
     #
     # Can be used to detect unbatched queries in an ActiveSupport::Notifications.subscribe block.
@@ -23,24 +21,27 @@ module GraphQL::Batch
       @loading = false
     end
 
+    def loader(key)
+      @loaders[key] ||= yield.tap do |loader|
+        loader.executor = self
+        loader.loader_key = key
+      end
+    end
+
     def resolve(loader)
       with_loading(true) { loader.resolve }
     end
 
-    def shift
-      @loaders.shift.last
-    end
-
     def tick
-      resolve(shift)
+      resolve(@loaders.shift.last)
     end
 
     def wait_all
-      tick until loaders.empty?
+      tick until @loaders.empty?
     end
 
     def clear
-      loaders.clear
+      @loaders.clear
     end
 
     def defer
