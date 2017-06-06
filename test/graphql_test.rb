@@ -342,6 +342,6 @@ class GraphQL::GraphQLTest < Minitest::Test
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/1,2", "Product/3"], queries
+    assert_equal ["Product/1,2", "Product/2,3"], queries
   end
 end
