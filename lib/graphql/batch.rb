@@ -10,6 +10,7 @@ module GraphQL
     class NestedError < StandardError; end
 
     def self.batch
+      # TODO: Should this be allowed now?
       raise NestedError if GraphQL::Batch::Executor.current
       begin
         GraphQL::Batch::Executor.current = GraphQL::Batch::Executor.new

@@ -9,6 +9,7 @@ class GraphQL::BatchTest < Minitest::Test
   end
 
   def test_nested_batch
+    # TODO: Update this test?
     GraphQL::Batch.batch do
       assert_raises(GraphQL::Batch::NestedError) do
         GraphQL::Batch.batch {}
