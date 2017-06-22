@@ -29,7 +29,11 @@ module GraphQL::Batch
     end
 
     def resolve(loader)
-      with_loading(true) { loader.resolve }
+      was_loading = @loading
+      @loading = true
+      loader.resolve
+    ensure
+      @loading = was_loading
     end
 
     def tick
@@ -44,22 +48,14 @@ module GraphQL::Batch
       @loaders.clear
     end
 
-    def defer
-      # Since we aren't actually deferring callbacks, we need to set #loading to false so that any queries
-      # that happen in the callback aren't interpreted as being performed in GraphQL::Batch::Loader#perform
-      with_loading(false) { yield }
-    end
-
-    private
-
-    def with_loading(loading)
+    def around_promise_callbacks
+      # We need to set #loading to false so that any queries that happen in the promise
+      # callback aren't interpreted as being performed in GraphQL::Batch::Loader#perform
       was_loading = @loading
-      begin
-        @loading = loading
-        yield
-      ensure
-        @loading = was_loading
-      end
+      @loading = false
+      yield
+    ensure
+      @loading = was_loading
     end
   end
 end

@@ -1,8 +1,6 @@
 module GraphQL::Batch
-  class Promise < ::Promise
-    def defer
-      executor = Executor.current
-      executor ? executor.defer { super } : super
-    end
+  Promise = ::Promise
+  if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("2.3")
+    deprecate_constant :Promise
   end
 end
