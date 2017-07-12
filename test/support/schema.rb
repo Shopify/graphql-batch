@@ -62,6 +62,15 @@ ProductType = GraphQL::ObjectType.define do
       Promise.all([query]).then { query.value.size }
     }
   end
+
+  field :this_product do
+    type -> { ProductType }
+    resolve -> (product, args, ctx) {
+      Promise.all([]).then do
+        product
+      end
+    }
+  end
 end
 
 QueryType = GraphQL::ObjectType.define do
