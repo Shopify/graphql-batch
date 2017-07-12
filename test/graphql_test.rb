@@ -279,6 +279,47 @@ class GraphQL::GraphQLTest < Minitest::Test
     assert_equal ["Product?limit=2", "Product/1,2/variants", "ProductVariant/1,2,4,5,6/images"], queries
   end
 
+  def test_deeply_nested_lazy_queries
+    query_string = <<-GRAPHQL
+      {
+        products(first: 2) {
+          this_product {
+            variants {
+              id
+              image_ids
+            }
+          }
+        }
+      }
+    GRAPHQL
+    result = schema_execute(query_string)
+    expected = {
+      "data" => {
+        "products" => [
+          {
+            "this_product" => {
+              "variants" => [
+                { "id" => "1", "image_ids" => ["4"] },
+                { "id" => "2", "image_ids" => ["5"] },
+              ],
+            },
+          },
+          {
+            "this_product" => {
+              "variants" => [
+                { "id" => "4", "image_ids" => [] },
+                { "id" => "5", "image_ids" => [] },
+                { "id" => "6", "image_ids" => [] },
+              ],
+            },
+          }
+        ]
+      }
+    }
+    assert_equal expected, result
+    assert_equal ["Product?limit=2", "Product/1,2/variants", "ProductVariant/1,2,4,5,6/images"], queries
+  end
+
   def test_load_error
     query_string = <<-GRAPHQL
       {
