@@ -12,11 +12,6 @@ class GraphQL::MultiplexTest < Minitest::Test
     QueryNotifier.subscriber = nil
   end
 
-  def schema_multiplex(*args)
-    ::Schema.multiplex(*args)
-  end
-
-
   def test_batched_find_by_id
     query_string = <<-GRAPHQL
       query FetchTwoProducts($id1: ID!, $id2: ID!){
@@ -25,7 +20,7 @@ class GraphQL::MultiplexTest < Minitest::Test
       }
     GRAPHQL
 
-    results = schema_multiplex([
+    results = Schema.multiplex([
       { query: query_string, variables: { "id1" => "1", "id2" => "2"} },
       { query: query_string, variables: { "id1" => "1", "id2" => "3"}},
     ])
