@@ -20,7 +20,11 @@ module GraphQL
     end
 
     def self.use(schema_defn)
-      schema_defn.instrument(:query, GraphQL::Batch::Setup)
+      if GraphQL::VERSION >= "1.6.0"
+        schema_defn.instrument(:multiplex, GraphQL::Batch::SetupMultiplex)
+      else
+        schema_defn.instrument(:query, GraphQL::Batch::Setup)
+      end
       schema_defn.lazy_resolve(::Promise, :sync)
     end
 
@@ -34,3 +38,4 @@ require_relative "batch/loader"
 require_relative "batch/executor"
 require_relative "batch/promise"
 require_relative "batch/setup"
+require_relative "batch/setup_multiplex"
