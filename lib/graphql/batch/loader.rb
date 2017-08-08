@@ -40,7 +40,7 @@ module GraphQL::Batch
     end
 
     def load_many(keys)
-      ::Promise.all(keys.map { |key| load(key) })
+      Promise.all(keys.map { |key| load(key) })
     end
 
     def resolve #:nodoc:
