@@ -11,10 +11,7 @@ class RecordLoader < GraphQL::Batch::Loader
   end
 
   def perform(keys)
-    query(keys).each do |record|
-      value = @column_type.cast(record.public_send(@column))
-      fulfill(value, record)
-    end
+    query(keys).each { |record| fulfill(record.public_send(@column), record) }
     keys.each { |key| fulfill(key, nil) unless fulfilled?(key) }
   end
 
