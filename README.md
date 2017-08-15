@@ -72,6 +72,12 @@ The loader class can be used from the resolve proc for a graphql field by callin
 resolve -> (obj, args, context) { RecordLoader.for(Product).load(args["id"]) }
 ```
 
+Although this library doesn't have a dependency on active record,
+the [examples directory](examples) has record and association loaders
+for active record which handles edge cases like type casting ids
+and overriding GraphQL::Batch::Loader#cache_key to load associations
+on records with the same id.
+
 ### Promises
 
 GraphQL::Batch::Loader#load returns a Promise using the [promise.rb gem](https://rubygems.org/gems/promise.rb) to provide a promise based API, so you can transform the query results using `.then`
