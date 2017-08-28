@@ -9,11 +9,13 @@ module GraphQL::Batch
         strategy = execution_context.strategy
         return super if strategy.enable_batching
 
+        GraphQL::Batch::Executor.current.clear
         begin
           strategy.enable_batching = true
           strategy.deep_sync(Promise.sync(super))
         ensure
           strategy.enable_batching = false
+          GraphQL::Batch::Executor.current.clear
         end
       end
     end

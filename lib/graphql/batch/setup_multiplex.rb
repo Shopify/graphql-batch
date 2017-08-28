@@ -1,14 +1,19 @@
 module GraphQL::Batch
-  module SetupMultiplex
-    extend self
+  class SetupMultiplex
+    def initialize(schema)
+      @schema = schema
+    end
 
     def before_multiplex(multiplex)
-      raise NestedError if GraphQL::Batch::Executor.current
-      GraphQL::Batch::Executor.current = GraphQL::Batch::Executor.new
+      Setup.start_batching
     end
 
     def after_multiplex(multiplex)
-      GraphQL::Batch::Executor.current = nil
+      Setup.end_batching
+    end
+
+    def instrument(type, field)
+      Setup.instrument_field(@schema, type, field)
     end
   end
 end

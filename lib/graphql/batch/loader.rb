@@ -58,7 +58,6 @@ module GraphQL::Batch
     # For Promise#sync
     def wait #:nodoc:
       if executor
-        executor.loaders.delete(loader_key)
         executor.resolve(self)
       else
         resolve

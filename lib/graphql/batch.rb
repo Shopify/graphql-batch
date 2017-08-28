@@ -20,10 +20,15 @@ module GraphQL
     end
 
     def self.use(schema_defn)
+      schema = schema_defn.target
       if GraphQL::VERSION >= "1.6.0"
-        schema_defn.instrument(:multiplex, GraphQL::Batch::SetupMultiplex)
+        instrumentation = GraphQL::Batch::SetupMultiplex.new(schema)
+        schema_defn.instrument(:multiplex, instrumentation)
+        schema_defn.instrument(:field, instrumentation)
       else
-        schema_defn.instrument(:query, GraphQL::Batch::Setup)
+        instrumentation = GraphQL::Batch::Setup.new(schema)
+        schema_defn.instrument(:query, instrumentation)
+        schema_defn.instrument(:field, instrumentation)
       end
       schema_defn.lazy_resolve(::Promise, :sync)
     end

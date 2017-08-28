@@ -17,6 +17,11 @@ ProductVariantType = GraphQL::ObjectType.define do
       end
     }
   end
+  field :product, !ProductType do
+    resolve ->(variant, _, _) {
+      RecordLoader.for(Product).load(variant.product_id)
+    }
+  end
 end
 
 ProductType = GraphQL::ObjectType.define do

@@ -279,6 +279,36 @@ class GraphQL::GraphQLTest < Minitest::Test
     assert_equal ["Product?limit=2", "Product/1,2/variants", "ProductVariant/1,2,4,5,6/images"], queries
   end
 
+  def test_loader_reused_after_loading
+    query_string = <<-GRAPHQL
+      {
+        product(id: "2") {
+          variants {
+            id
+            product {
+              id
+              title
+            }
+          }
+        }
+      }
+    GRAPHQL
+    result = schema_execute(query_string)
+    expected = {
+      "data" => {
+        "product" => {
+          "variants" => [
+            { "id" => "4", "product" => { "id" => "2", "title" => "Pants" } },
+            { "id" => "5", "product" => { "id" => "2", "title" => "Pants" } },
+            { "id" => "6", "product" => { "id" => "2", "title" => "Pants" } },
+          ],
+        }
+      }
+    }
+    assert_equal expected, result
+    assert_equal ["Product/2", "Product/2/variants"], queries
+  end
+
   def test_load_error
     query_string = <<-GRAPHQL
       {
