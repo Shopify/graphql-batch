@@ -12,10 +12,7 @@ module GraphQL::Batch
           " `GraphQL::Batch::Setup` as a query instrumenter if using with `graphql-ruby`"
       end
 
-      executor.loaders[loader_key] ||= new(*group_args).tap do |loader|
-        loader.loader_key = loader_key
-        loader.executor = executor
-      end
+      executor.loader(loader_key) { new(*group_args) }
     end
 
     def self.loader_key_for(*group_args)
@@ -35,7 +32,7 @@ module GraphQL::Batch
     def load(key)
       cache[cache_key(key)] ||= begin
         queue << key
-        Promise.new.tap { |promise| promise.source = self }
+        ::Promise.new.tap { |promise| promise.source = self }
       end
     end
 
@@ -50,9 +47,7 @@ module GraphQL::Batch
       perform(load_keys)
       check_for_broken_promises(load_keys)
     rescue => err
-      each_pending_promise(load_keys) do |key, promise|
-        promise.reject(err)
-      end
+      reject_pending_promises
     end
 
     # For Promise#sync
@@ -72,7 +67,15 @@ module GraphQL::Batch
 
     # Fulfill the key with provided value, for use in #perform
     def fulfill(key, value)
-      promise_for(key).fulfill(value)
+      finish_resolve(key) do |promise|
+        promise.fulfill(value)
+      end
+    end
+
+    def reject(key, reason)
+      finish_resolve(key) do |promise|
+        promise.reject(reason)
+      end
     end
 
     # Returns true when the key has already been fulfilled, otherwise returns false
@@ -92,6 +95,14 @@ module GraphQL::Batch
 
     private
 
+    def finish_resolve(key)
+      promise = promise_for(key)
+      return yield(promise) unless executor
+      executor.around_promise_callbacks do
+        yield promise
+      end
+    end
+
     def cache
       @cache ||= {}
     end
@@ -104,18 +115,16 @@ module GraphQL::Batch
       cache.fetch(cache_key(load_key))
     end
 
-    def each_pending_promise(load_keys)
+    def reject_pending_promises
       load_keys.each do |key|
-        promise = promise_for(key)
-        if promise.pending?
-          yield key, promise
-        end
+        # promise.rb ignores reject if promise isn't pending
+        reject(key, err)
       end
     end
 
     def check_for_broken_promises(load_keys)
-      each_pending_promise(load_keys) do |key, promise|
-        promise.reject(::Promise::BrokenError.new("#{self.class} didn't fulfill promise for key #{key.inspect}"))
+      load_keys.each do |key|
+        reject(key, ::Promise::BrokenError.new("#{self.class} didn't fulfill promise for key #{key.inspect}"))
       end
     end
   end

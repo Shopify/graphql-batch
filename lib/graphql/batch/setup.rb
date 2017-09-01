@@ -17,7 +17,7 @@ module GraphQL::Batch
           resolve ->(obj, args, ctx) {
             GraphQL::Batch::Executor.current.clear
             begin
-              Promise.sync(old_resolve_proc.call(obj, args, ctx))
+              ::Promise.sync(old_resolve_proc.call(obj, args, ctx))
             ensure
               GraphQL::Batch::Executor.current.clear
             end

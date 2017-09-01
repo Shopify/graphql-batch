@@ -13,7 +13,7 @@ module GraphQL::Batch
 
     # Needed for MutationExecutionStrategy
     def deep_sync(result) #:nodoc:
-      Promise.sync(as_promise_unless_resolved(result))
+      ::Promise.sync(as_promise_unless_resolved(result))
     end
 
     private

@@ -11,8 +11,6 @@ module GraphQL::Batch
       Thread.current[THREAD_KEY] = executor
     end
 
-    attr_reader :loaders
-
     # Set to true when performing a batch query, otherwise, it is false.
     #
     # Can be used to detect unbatched queries in an ActiveSupport::Notifications.subscribe block.
@@ -23,42 +21,41 @@ module GraphQL::Batch
       @loading = false
     end
 
-    def resolve(loader)
-      with_loading(true) { loader.resolve }
+    def loader(key)
+      @loaders[key] ||= yield.tap do |loader|
+        loader.executor = self
+        loader.loader_key = key
+      end
     end
 
-    def shift
-      @loaders.shift.last
+    def resolve(loader)
+      was_loading = @loading
+      @loading = true
+      loader.resolve
+    ensure
+      @loading = was_loading
     end
 
     def tick
-      resolve(shift)
+      resolve(@loaders.shift.last)
     end
 
     def wait_all
-      tick until loaders.empty?
+      tick until @loaders.empty?
     end
 
     def clear
-      loaders.clear
+      @loaders.clear
     end
 
-    def defer
-      # Since we aren't actually deferring callbacks, we need to set #loading to false so that any queries
-      # that happen in the callback aren't interpreted as being performed in GraphQL::Batch::Loader#perform
-      with_loading(false) { yield }
-    end
-
-    private
-
-    def with_loading(loading)
+    def around_promise_callbacks
+      # We need to set #loading to false so that any queries that happen in the promise
+      # callback aren't interpreted as being performed in GraphQL::Batch::Loader#perform
       was_loading = @loading
-      begin
-        @loading = loading
-        yield
-      ensure
-        @loading = was_loading
-      end
+      @loading = false
+      yield
+    ensure
+      @loading = was_loading
     end
   end
 end
