@@ -19,14 +19,14 @@ module GraphQL
       end
     end
 
-    def self.use(schema_defn)
+    def self.use(schema_defn, executor_class: GraphQL::Batch::Executor)
       schema = schema_defn.target
       if GraphQL::VERSION >= "1.6.0"
-        instrumentation = GraphQL::Batch::SetupMultiplex.new(schema)
+        instrumentation = GraphQL::Batch::SetupMultiplex.new(schema, executor_class: executor_class)
         schema_defn.instrument(:multiplex, instrumentation)
         schema_defn.instrument(:field, instrumentation)
       else
-        instrumentation = GraphQL::Batch::Setup.new(schema)
+        instrumentation = GraphQL::Batch::Setup.new(schema, executor_class: executor_class)
         schema_defn.instrument(:query, instrumentation)
         schema_defn.instrument(:field, instrumentation)
       end
