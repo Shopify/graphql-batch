@@ -47,7 +47,7 @@ module GraphQL::Batch
       perform(load_keys)
       check_for_broken_promises(load_keys)
     rescue => err
-      reject_pending_promises
+      reject_pending_promises(load_keys, err)
     end
 
     # For Promise#sync
@@ -115,7 +115,7 @@ module GraphQL::Batch
       cache.fetch(cache_key(load_key))
     end
 
-    def reject_pending_promises
+    def reject_pending_promises(load_keys, err)
       load_keys.each do |key|
         # promise.rb ignores reject if promise isn't pending
         reject(key, err)

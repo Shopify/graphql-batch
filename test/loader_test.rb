@@ -33,6 +33,12 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     end
   end
 
+  class ExplodingLoader < GraphQL::Batch::Loader
+    def perform(_keys)
+      raise 'perform failed'
+    end
+  end
+
   def setup
     GraphQL::Batch::Executor.current = GraphQL::Batch::Executor.new
   end
@@ -161,5 +167,11 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
       loader2.load(:b),
     ])
     assert_equal [2, 1, 2], group.sync
+  end
+
+  def test_loader_with_failing_perform
+    error_message = nil
+    promise = ExplodingLoader.load([1]).then(nil, ->(err) { error_message = err.message } ).sync
+    assert_equal 'perform failed', error_message
   end
 end
