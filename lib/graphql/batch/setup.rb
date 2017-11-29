@@ -2,12 +2,11 @@ module GraphQL::Batch
   class Setup
     class << self
       def start_batching(executor_class)
-        raise NestedError if GraphQL::Batch::Executor.current
-        GraphQL::Batch::Executor.current = executor_class.new
+        GraphQL::Batch::Executor.start_batch(executor_class)
       end
 
       def end_batching
-        GraphQL::Batch::Executor.current = nil
+        GraphQL::Batch::Executor.end_batch
       end
 
       def instrument_field(schema, type, field)
