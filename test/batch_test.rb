@@ -9,10 +9,19 @@ class GraphQL::BatchTest < Minitest::Test
   end
 
   def test_nested_batch
-    GraphQL::Batch.batch do
-      assert_raises(GraphQL::Batch::NestedError) do
-        GraphQL::Batch.batch {}
+    promise1 = nil
+    promise2 = nil
+
+    product = GraphQL::Batch.batch do
+      promise1 = RecordLoader.for(Product).load(1)
+      GraphQL::Batch.batch do
+        promise2 = RecordLoader.for(Product).load(1)
       end
+      promise1
     end
+
+    assert_equal 'Shirt', product.title
+    assert_equal promise1, promise2
+    assert_nil GraphQL::Batch::Executor.current
   end
 end
