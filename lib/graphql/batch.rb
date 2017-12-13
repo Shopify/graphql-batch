@@ -8,9 +8,9 @@ module GraphQL
   module Batch
     BrokenPromiseError = ::Promise::BrokenError
 
-    def self.batch
+    def self.batch(executor_class: GraphQL::Batch::Executor)
       begin
-        GraphQL::Batch::Executor.start_batch GraphQL::Batch::Executor
+        GraphQL::Batch::Executor.start_batch(executor_class)
         ::Promise.sync(yield)
       ensure
         GraphQL::Batch::Executor.end_batch
