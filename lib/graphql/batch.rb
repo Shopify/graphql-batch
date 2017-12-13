@@ -3,12 +3,11 @@ if Gem::Version.new(GraphQL::VERSION) < Gem::Version.new("1.3")
   warn "graphql gem versions less than 1.3 are deprecated for use with graphql-batch, upgrade so lazy_resolve can be used"
 end
 require "promise.rb"
-require_relative "batch/loader"
 
 module GraphQL
   module Batch
     BrokenPromiseError = ::Promise::BrokenError
-    NoExecutorError = Loader::NoExecutorError
+    class NoExecutorError < StandardError; end
 
     def self.batch
       begin
@@ -39,6 +38,7 @@ module GraphQL
 end
 
 require_relative "batch/version"
+require_relative "batch/loader"
 require_relative "batch/executor"
 require_relative "batch/promise"
 require_relative "batch/setup"
