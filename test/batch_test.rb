@@ -12,11 +12,11 @@ class GraphQL::BatchTest < Minitest::Test
     @call_count = 0
 
     class << self
-      attr_reader :call_count
+      attr_accessor :call_count
     end
 
     def around_promise_callbacks
-      @call_count += 1
+      self.class.call_count += 1
 
       super
     end
