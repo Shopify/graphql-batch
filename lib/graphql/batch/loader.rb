@@ -1,15 +1,17 @@
 module GraphQL::Batch
   class Loader
-    class NoExecutorError < StandardError; end
+    NoExecutorError = GraphQL::Batch::NoExecutorError
+    deprecate_constant :NoExecutorError if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("2.3")
 
     def self.for(*group_args)
       loader_key = loader_key_for(*group_args)
       executor = Executor.current
 
       unless executor
-        raise NoExecutorError, "Cannot create loader without an Executor."\
-          " Wrap the call to `for` with `GraphQL::Batch.batch` or use"\
-          " `GraphQL::Batch::Setup` as a query instrumenter if using with `graphql-ruby`"
+        raise GraphQL::Batch::NoExecutorError, 'Cannot create loader without'\
+          ' an Executor. Wrap the call to `for` with `GraphQL::Batch.batch`'\
+          ' or use `GraphQL::Batch::Setup` as a query instrumenter if'\
+          ' using with `graphql-ruby`'
       end
 
       executor.loader(loader_key) { new(*group_args) }

@@ -7,6 +7,7 @@ require "promise.rb"
 module GraphQL
   module Batch
     BrokenPromiseError = ::Promise::BrokenError
+    class NoExecutorError < StandardError; end
 
     def self.batch
       begin
