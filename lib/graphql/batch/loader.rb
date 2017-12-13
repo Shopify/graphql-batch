@@ -1,7 +1,7 @@
 module GraphQL::Batch
   class Loader
     NoExecutorError = GraphQL::Batch::NoExecutorError
-    deprecate_constant :NoExecutorError
+    deprecate_constant :NoExecutorError if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("2.3")
 
     def self.for(*group_args)
       loader_key = loader_key_for(*group_args)
