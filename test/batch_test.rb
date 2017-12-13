@@ -9,14 +9,14 @@ class GraphQL::BatchTest < Minitest::Test
   end
 
   class MyCustomExecutor < GraphQL::Batch::Executor
-    @@call_count = 0
+    @call_count = 0
 
     def self.call_count
-      @@call_count
+      @call_count
     end
 
     def around_promise_callbacks
-      @@call_count += 1
+      @call_count += 1
 
       super
     end
@@ -28,7 +28,7 @@ class GraphQL::BatchTest < Minitest::Test
     end
 
     assert_equal 'Shirt', product.title
-    assert MyCustomExecutor.call_count > 0
+    assert MyCustomExecutor.call_count.positive?
   end
 
   def test_nested_batch
