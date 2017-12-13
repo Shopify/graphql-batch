@@ -50,7 +50,7 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   def test_no_executor
     GraphQL::Batch::Executor.current = nil
 
-    assert_raises(GraphQL::Batch::Loader::NoExecutorError) do
+    assert_raises(GraphQL::Batch::NoExecutorError) do
       EchoLoader.for
     end
   end

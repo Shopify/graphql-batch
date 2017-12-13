@@ -46,4 +46,12 @@ class GraphQL::Batch::ExecutorTest < Minitest::Test
     end.sync
     assert_equal true, loader2.loading_in_perform
   end
+
+  def test_end_batch_with_no_executor
+    GraphQL::Batch::Executor.current = nil
+
+    assert_raises(GraphQL::Batch::NoExecutorError) do
+      GraphQL::Batch::Executor.end_batch
+    end
+  end
 end
