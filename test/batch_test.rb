@@ -28,7 +28,7 @@ class GraphQL::BatchTest < Minitest::Test
     end
 
     assert_equal 'Shirt', product.title
-    assert MyCustomExecutor.call_count.positive?
+    assert MyCustomExecutor.call_count > 0
   end
 
   def test_nested_batch
