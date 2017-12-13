@@ -20,7 +20,8 @@ module GraphQL::Batch
       def end_batch
         executor = current
         unless executor
-          raise GraphQL::Batch::NoExecutorError, 'Cannot end a batch without an Executor.'
+          raise GraphQL::Batch::NoExecutorError,
+                'Cannot end a batch without an Executor.'
         end
         return unless executor.decrement_level < 1
         self.current = nil
