@@ -1,6 +1,7 @@
 module GraphQL::Batch
   class Loader
     class NoExecutorError < StandardError; end
+    deprecate_constant :NoExecutorError
 
     def self.for(*group_args)
       loader_key = loader_key_for(*group_args)
