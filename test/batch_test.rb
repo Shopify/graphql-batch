@@ -11,8 +11,8 @@ class GraphQL::BatchTest < Minitest::Test
   class MyCustomExecutor < GraphQL::Batch::Executor
     @call_count = 0
 
-    def self.call_count
-      @call_count
+    class << self
+      attr_reader :call_count
     end
 
     def around_promise_callbacks
