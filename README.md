@@ -72,6 +72,12 @@ The loader class can be used from the resolve proc for a graphql field by callin
 resolve -> (obj, args, context) { RecordLoader.for(Product).load(args["id"]) }
 ```
 
+The loader also supports batch loading an array of records instead of just a single record, via `load_many`. For example:
+
+```ruby
+resolve -> (obj, args, context) { RecordLoader.for(Product).load_many(args["ids"]) }
+```
+
 Although this library doesn't have a dependency on active record,
 the [examples directory](examples) has record and association loaders
 for active record which handles edge cases like type casting ids
