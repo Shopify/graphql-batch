@@ -1,9 +1,10 @@
 class RecordLoader < GraphQL::Batch::Loader
-  def initialize(model, column: model.primary_key, where: nil)
+  def initialize(model, column: model.primary_key, where: nil, unique: true)
     @model = model
     @column = column.to_s
     @column_type = model.type_for_attribute(@column)
     @where = where
+    @unique = unique
   end
 
   def load(key)
@@ -11,7 +12,13 @@ class RecordLoader < GraphQL::Batch::Loader
   end
 
   def perform(keys)
-    query(keys).each { |record| fulfill(record.public_send(@column), record) }
+    if @unique
+      query(keys).each { |record| fulfill(record.public_send(@column), record) }
+    else
+      query(keys).group_by { |record| record.public_send(@column) }.each do |key, records|
+        fulfill(key, records)
+      end
+    end
     keys.each { |key| fulfill(key, nil) unless fulfilled?(key) }
   end
 
