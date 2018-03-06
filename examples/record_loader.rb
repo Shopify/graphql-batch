@@ -13,13 +13,15 @@ class RecordLoader < GraphQL::Batch::Loader
 
   def perform(keys)
     if @unique
+      default = nil
       query(keys).each { |record| fulfill(record.public_send(@column), record) }
     else
+      default = []
       query(keys).group_by { |record| record.public_send(@column) }.each do |key, records|
         fulfill(key, records)
       end
     end
-    keys.each { |key| fulfill(key, nil) unless fulfilled?(key) }
+    keys.each { |key| fulfill(key, default.dup) unless fulfilled?(key) }
   end
 
   private
