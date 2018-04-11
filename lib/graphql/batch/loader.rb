@@ -127,7 +127,7 @@ module GraphQL::Batch
 
     def check_for_broken_promises(load_keys)
       load_keys.each do |key|
-        next unless promise_for(key).pending?
+        next unless promise_for(key).pending? || promise_for(key).fulfilled?
 
         reject(key, ::Promise::BrokenError.new("#{self.class} didn't fulfill promise for key #{key.inspect}"))
       end
