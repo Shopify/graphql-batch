@@ -23,15 +23,6 @@ module GraphQL::Batch
           }
         end
       end
-
-      def before_query(query)
-        warn "Deprecated graphql-batch setup `instrument(:query, GraphQL::Batch::Setup)`, replace with `use GraphQL::Batch`"
-        start_batching(GraphQL::Batch::Executor)
-      end
-
-      def after_query(query)
-        end_batching
-      end
     end
 
     def initialize(schema, executor_class:)
