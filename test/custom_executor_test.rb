@@ -14,6 +14,13 @@ class GraphQL::Batch::CustomExecutorTest < Minitest::Test
     end
   end
 
+  class Schema < GraphQL::Schema
+    query ::QueryType
+    mutation ::MutationType
+
+    use GraphQL::Batch, executor_class: MyCustomExecutor
+  end
+
   def setup
     MyCustomExecutor.call_count = 0
   end
@@ -28,15 +35,8 @@ class GraphQL::Batch::CustomExecutorTest < Minitest::Test
   end
 
   def test_custom_executor_class
-    schema = GraphQL::Schema.define do
-      query ::QueryType
-      mutation ::MutationType
-
-      use GraphQL::Batch, executor_class: MyCustomExecutor
-    end
-
     query_string = '{ product(id: "1") { id } }'
-    schema.execute(query_string)
+    Schema.execute(query_string)
 
     assert MyCustomExecutor.call_count > 0
   end
