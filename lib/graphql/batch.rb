@@ -34,6 +34,5 @@ end
 require_relative "batch/version"
 require_relative "batch/loader"
 require_relative "batch/executor"
-require_relative "batch/promise"
 require_relative "batch/setup"
 require_relative "batch/setup_multiplex"
