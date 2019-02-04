@@ -1,7 +1,4 @@
 require "graphql"
-if Gem::Version.new(GraphQL::VERSION) < Gem::Version.new("1.3")
-  warn "graphql gem versions less than 1.3 are deprecated for use with graphql-batch, upgrade so lazy_resolve can be used"
-end
 require "promise.rb"
 
 module GraphQL
@@ -31,9 +28,6 @@ module GraphQL
       end
       schema_defn.lazy_resolve(::Promise, :sync)
     end
-
-    autoload :ExecutionStrategy, 'graphql/batch/execution_strategy'
-    autoload :MutationExecutionStrategy, 'graphql/batch/mutation_execution_strategy'
   end
 end
 
