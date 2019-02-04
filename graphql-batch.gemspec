@@ -18,13 +18,12 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "graphql", ">= 0.8", "< 2"
+  spec.add_runtime_dependency "graphql", ">= 1.3", "< 2"
   spec.add_runtime_dependency "promise.rb", "~> 0.7.2"
 
   if RUBY_ENGINE == 'ruby' && Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("2.2")
     spec.add_development_dependency "byebug"
   end
-  spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "minitest"
 end
