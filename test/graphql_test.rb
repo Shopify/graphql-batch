@@ -163,7 +163,7 @@ class GraphQL::GraphQLTest < Minitest::Test
         products(first: 2) {
           id
           title
-          variants_count
+          variantsCount
           variants {
             id
             title
@@ -178,7 +178,7 @@ class GraphQL::GraphQLTest < Minitest::Test
           {
             "id" => "1",
             "title" => "Shirt",
-            "variants_count" => 2,
+            "variantsCount" => 2,
             "variants" => [
               { "id" => "1", "title" => "Red" },
               { "id" => "2", "title" => "Blue" },
@@ -187,7 +187,7 @@ class GraphQL::GraphQLTest < Minitest::Test
           {
             "id" => "2",
             "title" => "Pants",
-            "variants_count" => 3,
+            "variantsCount" => 3,
             "variants" => [
               { "id" => "4", "title" => "Small" },
               { "id" => "5", "title" => "Medium" },
@@ -204,13 +204,13 @@ class GraphQL::GraphQLTest < Minitest::Test
   def test_sub_queries
     query_string = <<-GRAPHQL
       {
-        product_variants_count(id: "2")
+        productVariantsCount(id: "2")
       }
     GRAPHQL
     result = schema_execute(query_string)
     expected = {
       "data" => {
-        "product_variants_count" => 3
+        "productVariantsCount" => 3
       }
     }
     assert_equal expected, result
@@ -248,7 +248,7 @@ class GraphQL::GraphQLTest < Minitest::Test
           id
           variants {
             id
-            image_ids
+            imageIds
           }
         }
       }
@@ -260,16 +260,16 @@ class GraphQL::GraphQLTest < Minitest::Test
           {
             "id" => "1",
             "variants" => [
-              { "id" => "1", "image_ids" => ["4"] },
-              { "id" => "2", "image_ids" => ["5"] },
+              { "id" => "1", "imageIds" => ["4"] },
+              { "id" => "2", "imageIds" => ["5"] },
             ],
           },
           {
             "id" => "2",
             "variants" => [
-              { "id" => "4", "image_ids" => [] },
-              { "id" => "5", "image_ids" => [] },
-              { "id" => "6", "image_ids" => [] },
+              { "id" => "4", "imageIds" => [] },
+              { "id" => "5", "imageIds" => [] },
+              { "id" => "6", "imageIds" => [] },
             ],
           }
         ]
@@ -313,13 +313,13 @@ class GraphQL::GraphQLTest < Minitest::Test
     query_string = <<-GRAPHQL
       {
         constant
-        load_execution_error
+        loadExecutionError
       }
     GRAPHQL
     result = schema_execute(query_string)
     expected = {
-      "data" => { "constant"=>"constant value", "load_execution_error" => nil },
-      "errors" => [{ "message" => "test error message", "locations"=>[{"line"=>3, "column"=>9}], "path" => ["load_execution_error"] }],
+      "data" => { "constant"=>"constant value", "loadExecutionError" => nil },
+      "errors" => [{ "message" => "test error message", "locations"=>[{"line"=>3, "column"=>9}], "path" => ["loadExecutionError"] }],
     }
     assert_equal expected, result
   end
@@ -327,19 +327,19 @@ class GraphQL::GraphQLTest < Minitest::Test
   def test_mutation_execution
     query_string = <<-GRAPHQL
       mutation {
-        count1: counter_loader
-        incr1: increment_counter { value, load_value }
-        count2: counter_loader
-        incr2: increment_counter { value, load_value }
+        count1: counterLoader
+        incr1: incrementCounter { value, loadValue }
+        count2: counterLoader
+        incr2: incrementCounter { value, loadValue }
       }
     GRAPHQL
     result = schema_execute(query_string, context: { counter: [0] })
     expected = {
       "data" => {
         "count1" => 0,
-        "incr1" => { "value" => 1, "load_value" => 1 },
+        "incr1" => { "value" => 1, "loadValue" => 1 },
         "count2" => 1,
-        "incr2" => { "value" => 2, "load_value" => 2 },
+        "incr2" => { "value" => 2, "loadValue" => 2 },
       }
     }
     assert_equal expected, result
@@ -348,11 +348,11 @@ class GraphQL::GraphQLTest < Minitest::Test
   def test_mutation_batch_subselection_execution
     query_string = <<-GRAPHQL
       mutation {
-        mutation1: no_op {
+        mutation1: noOp {
           product1: product(id: "1") { id, title }
           product2: product(id: "2") { id, title }
         }
-        mutation2: no_op {
+        mutation2: noOp {
           product1: product(id: "2") { id, title }
           product2: product(id: "3") { id, title }
         }

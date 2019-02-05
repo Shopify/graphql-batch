@@ -1,161 +1,164 @@
-ImageType = GraphQL::ObjectType.define do
-  name "Image"
-
-  field :id, !types.ID
-  field :filename, !types.String
+class ImageType < GraphQL::Schema::Object
+  field :id, ID, null: false
+  field :filename, String, null: false
 end
 
-ProductVariantType = GraphQL::ObjectType.define do
-  name "ProductVariant"
+class ProductVariantType < GraphQL::Schema::Object
+  field :id, ID, null: false
+  field :title, String, null: false
+  field :image_ids, [ID, null: true], null: false
 
-  field :id, !types.ID
-  field :title, !types.String
-  field :image_ids, !types[types.ID] do
-    resolve ->(variant, _, _) {
-      AssociationLoader.for(ProductVariant, :images).load(variant).then do |images|
-        images.map(&:id)
-      end
-    }
+  def image_ids
+    AssociationLoader.for(ProductVariant, :images).load(object).then do |images|
+      images.map(&:id)
+    end
   end
-  field :product, !ProductType do
-    resolve ->(variant, _, _) {
-      RecordLoader.for(Product).load(variant.product_id)
-    }
+
+  field :product, GraphQL::Schema::LateBoundType.new('Product'), null: false
+
+  def product
+    RecordLoader.for(Product).load(object.product_id)
   end
 end
 
-ProductType = GraphQL::ObjectType.define do
-  name "Product"
+class ProductType < GraphQL::Schema::Object
+  field :id, ID, null: false
+  field :title, String, null: false
+  field :images, [ImageType], null: true
 
-  field :id, !types.ID
-  field :title, !types.String
-
-  field :images do
-    type types[!ImageType]
-    resolve -> (product, args, ctx) {
-      product_image_query = RecordLoader.for(Image).load(product.image_id)
-      variant_images_query = AssociationLoader.for(Product, :variants).load(product).then do |variants|
-        variant_image_queries = variants.map do |variant|
-          AssociationLoader.for(ProductVariant, :images).load(variant)
-        end
-        Promise.all(variant_image_queries).then(&:flatten)
+  def images
+    product_image_query = RecordLoader.for(Image).load(object.image_id)
+    variant_images_query = AssociationLoader.for(Product, :variants).load(object).then do |variants|
+      variant_image_queries = variants.map do |variant|
+        AssociationLoader.for(ProductVariant, :images).load(variant)
       end
-      Promise.all([product_image_query, variant_images_query]).then do
-        [product_image_query.value] + variant_images_query.value
-      end
-    }
+      Promise.all(variant_image_queries).then(&:flatten)
+    end
+    Promise.all([product_image_query, variant_images_query]).then do
+      [product_image_query.value] + variant_images_query.value
+    end
   end
 
-  field :nonNullButRaises do
-    type !types.String
-    resolve -> (_, _, _) {
+  field :non_null_but_raises, String, null: false
+
+  def non_null_but_raises
+    raise GraphQL::ExecutionError, 'Error'
+  end
+
+  field :variants, [ProductVariantType], null: true
+
+  def variants
+    AssociationLoader.for(Product, :variants).load(object)
+  end
+
+  field :variants_count, Int, null: true
+
+  def variants_count
+    query = AssociationLoader.for(Product, :variants).load(object)
+    Promise.all([query]).then { query.value.size }
+  end
+end
+
+class QueryType < GraphQL::Schema::Object
+  field :constant, String, null: false
+
+  def constant
+    "constant value"
+  end
+
+  field :load_execution_error, String, null: true
+
+  def load_execution_error
+    RecordLoader.for(Product).load(1).then do |product|
+      raise GraphQL::ExecutionError, "test error message"
+    end
+  end
+
+  field :non_null_but_raises, ProductType, null: false
+
+  def non_null_but_raises
+    raise GraphQL::ExecutionError, 'Error'
+  end
+
+  field :non_null_but_promise_raises, String, null: false
+
+  def non_null_but_promise_raises
+    NilLoader.load.then do
       raise GraphQL::ExecutionError, 'Error'
-    }
+    end
   end
 
-  field :variants do
-    type types[!ProductVariantType]
-    resolve -> (product, args, ctx) {
-      AssociationLoader.for(Product, :variants).load(product)
-    }
+  field :product, ProductType, null: true do
+    argument :id, ID, required: true
   end
 
-  field :variants_count do
-    type types.Int
-    resolve -> (product, args, ctx) {
-      query = AssociationLoader.for(Product, :variants).load(product)
-      Promise.all([query]).then { query.value.size }
-    }
-  end
-end
-
-QueryType = GraphQL::ObjectType.define do
-  name "Query"
-
-  field :constant, !types.String do
-    resolve ->(_, _, _) { "constant value" }
+  def product(id:)
+    RecordLoader.for(Product).load(id)
   end
 
-  field :load_execution_error, types.String do
-    resolve ->(_, _, _) {
-      RecordLoader.for(Product).load(1).then do |product|
-        raise GraphQL::ExecutionError, "test error message"
-      end
-    }
+  field :products, [ProductType], null: true do
+    argument :first, Int, required: true
   end
 
-  field :nonNullButRaises do
-    type !ProductType
-    resolve -> (_, _, _) {
-      raise GraphQL::ExecutionError, 'Error'
-    }
+  def products(first:)
+    Product.first(first)
   end
 
-  field :nonNullButPromiseRaises do
-    type !types.String
-    resolve -> (_, _, _) {
-      NilLoader.load.then do
-        raise GraphQL::ExecutionError, 'Error'
-      end
-    }
+  field :product_variants_count, Int, null: true do
+    argument :id, ID, required: true
   end
 
-  field :product do
-    type ProductType
-    argument :id, !types.ID
-    resolve -> (obj, args, ctx) {
-      RecordLoader.for(Product).load(args["id"])
-    }
-  end
-
-  field :products do
-    type types[!ProductType]
-    argument :first, !types.Int
-    resolve -> (obj, args, ctx) { Product.first(args["first"]) }
-  end
-
-  field :product_variants_count do
-    type types.Int
-    argument :id, !types.ID
-    resolve -> (obj, args, ctx) {
-      RecordLoader.for(Product).load(args["id"]).then do |product|
-        AssociationLoader.for(Product, :variants).load(product).then(&:size)
-      end
-    }
+  def product_variants_count(id:)
+    RecordLoader.for(Product).load(id).then do |product|
+      AssociationLoader.for(Product, :variants).load(product).then(&:size)
+    end
   end
 end
 
-CounterType = GraphQL::ObjectType.define do
-  name "Counter"
+class CounterType < GraphQL::Schema::Object
+  field :value, Int, null: false, method: :object
+  field :load_value, Int, null: false
 
-  field :value, !types.Int do
-    resolve ->(obj, _, _) { obj }
-  end
-
-  field :load_value, !types.Int do
-    resolve ->(_, _, ctx) { CounterLoader.load(ctx[:counter]) }
+  def load_value
+    CounterLoader.load(context[:counter])
   end
 end
 
-MutationType = GraphQL::ObjectType.define do
-  name "Mutation"
+class IncrementCounterMutation < GraphQL::Schema::Mutation
+  null false
+  payload_type CounterType
 
-  field :increment_counter, !CounterType do
-    resolve ->(_, _, ctx) { ctx[:counter][0] += 1; CounterLoader.load(ctx[:counter]) }
-  end
-
-  field :counter_loader, !types.Int do
-    resolve ->(_, _, ctx) {
-      CounterLoader.load(ctx[:counter])
-    }
-  end
-
-  field :no_op, !QueryType do
-    resolve ->(_, _, ctx) { Hash.new }
+  def resolve
+    context[:counter][0] += 1
+    CounterLoader.load(context[:counter])
   end
 end
 
-Schema = GraphQL::Schema.define do
+class CounterLoaderMutation < GraphQL::Schema::Mutation
+  null false
+  payload_type Int
+
+  def resolve
+    CounterLoader.load(context[:counter])
+  end
+end
+
+class NoOpMutation < GraphQL::Schema::Mutation
+  null false
+  payload_type QueryType
+
+  def resolve
+    Hash.new
+  end
+end
+
+class MutationType < GraphQL::Schema::Object
+  field :increment_counter, mutation: IncrementCounterMutation
+  field :counter_loader, mutation: CounterLoaderMutation
+  field :no_op, mutation: NoOpMutation
+end
+
+class Schema < GraphQL::Schema
   query QueryType
   mutation MutationType
 
