@@ -116,7 +116,12 @@ class QueryType < GraphQL::Schema::Object
 end
 
 class CounterType < GraphQL::Schema::Object
-  field :value, Int, null: false, resolver_method: :object
+  field :value, Int, null: false
+
+  def value
+    object
+  end
+
   field :load_value, Int, null: false
 
   def load_value
