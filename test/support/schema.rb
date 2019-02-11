@@ -116,7 +116,7 @@ class QueryType < GraphQL::Schema::Object
 end
 
 class CounterType < GraphQL::Schema::Object
-  field :value, Int, null: false, method: :object
+  field :value, Int, null: false, resolver_method: :object
   field :load_value, Int, null: false
 
   def load_value
@@ -161,6 +161,9 @@ end
 class Schema < GraphQL::Schema
   query QueryType
   mutation MutationType
+
+  use GraphQL::Execution::Interpreter
+  use GraphQL::Analysis::AST
 
   use GraphQL::Batch
 end
