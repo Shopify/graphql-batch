@@ -162,8 +162,11 @@ class Schema < GraphQL::Schema
   query QueryType
   mutation MutationType
 
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
+  if ENV["TESTING_INTERPRETER"] == "true"
+    use GraphQL::Execution::Interpreter
+    # This probably has no effect, but just to get the full test:
+    use GraphQL::Analysis::AST
+  end
 
   use GraphQL::Batch
 end

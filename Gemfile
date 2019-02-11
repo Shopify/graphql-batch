@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gemspec
-# TODO:
-# - Rename `#before_resolve` to `#resolve` in field_extension
-# - Release another `.pre` version
-gem "graphql", github: "rmosolgo/graphql-ruby", branch: "sequential-mutation-root-fields"
+
+if ENV["TESTING_INTERPRETER"] == "true"
+  gem "graphql", "1.9.0.pre4"
+end
