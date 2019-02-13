@@ -17,7 +17,8 @@ module GraphQL
 
     def self.use(schema_defn, executor_class: GraphQL::Batch::Executor)
       schema = schema_defn.target
-      if schema.respond_to?(:interpreter?) && schema.interpreter?
+      if Gem::Version.new(GraphQL::VERSION) >= Gem::Version.new('1.9.0.pre3')
+        require_relative "batch/mutation_field_extension"
         if schema.mutation
           schema.mutation.fields.each do |name, f|
             field = f.metadata[:type_class]
