@@ -46,6 +46,3 @@ require_relative "batch/loader"
 require_relative "batch/executor"
 require_relative "batch/setup"
 require_relative "batch/setup_multiplex"
-if defined?(GraphQL::Schema::FieldExtension)
-  require_relative "batch/mutation_field_extension"
-end
