@@ -116,7 +116,12 @@ class QueryType < GraphQL::Schema::Object
 end
 
 class CounterType < GraphQL::Schema::Object
-  field :value, Int, null: false, method: :object
+  field :value, Int, null: false
+
+  def value
+    object
+  end
+
   field :load_value, Int, null: false
 
   def load_value
@@ -161,6 +166,12 @@ end
 class Schema < GraphQL::Schema
   query QueryType
   mutation MutationType
+
+  if ENV["TESTING_INTERPRETER"] == "true"
+    use GraphQL::Execution::Interpreter
+    # This probably has no effect, but just to get the full test:
+    use GraphQL::Analysis::AST
+  end
 
   use GraphQL::Batch
 end

@@ -2,3 +2,6 @@ language: ruby
 rvm:
   - 2.3
   - 2.6
+env:
+  - TESTING_INTERPRETER=true
+  - TESTING_INTERPRETER=false
