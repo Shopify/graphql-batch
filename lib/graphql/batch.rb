@@ -17,20 +17,21 @@ module GraphQL
 
     def self.use(schema_defn, executor_class: GraphQL::Batch::Executor)
       schema = schema_defn.target
-      if Gem::Version.new(GraphQL::VERSION) >= Gem::Version.new('1.9.0.pre3')
-        require_relative "batch/mutation_field_extension"
+      if GraphQL::VERSION >= "1.6.0"
+        instrumentation = GraphQL::Batch::SetupMultiplex.new(schema, executor_class: executor_class)
+        schema_defn.instrument(:multiplex, instrumentation)
         if schema.mutation
-          schema.mutation.fields.each do |name, f|
-            field = f.metadata[:type_class]
-            field.extension(GraphQL::Batch::MutationFieldExtension)
+          if Gem::Version.new(GraphQL::VERSION) >= Gem::Version.new('1.9.0.pre3') &&
+              schema.mutation.metadata[:type_class]
+            require_relative "batch/mutation_field_extension"
+            schema.mutation.fields.each do |name, f|
+              field = f.metadata[:type_class]
+              field.extension(GraphQL::Batch::MutationFieldExtension)
+            end
+          else
+            schema_defn.instrument(:field, instrumentation)
           end
         end
-        instrumentation = GraphQL::Batch::SetupMultiplex.new(schema, executor_class: executor_class)
-        schema_defn.instrument(:multiplex, instrumentation)
-      elsif GraphQL::VERSION >= "1.6.0"
-        instrumentation = GraphQL::Batch::SetupMultiplex.new(schema, executor_class: executor_class)
-        schema_defn.instrument(:multiplex, instrumentation)
-        schema_defn.instrument(:field, instrumentation)
       else
         instrumentation = GraphQL::Batch::Setup.new(schema, executor_class: executor_class)
         schema_defn.instrument(:query, instrumentation)
