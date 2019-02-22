@@ -48,7 +48,9 @@ class RecordLoader < GraphQL::Batch::Loader
 end
 ```
 
-Use `GraphQL::Batch` as a plugin in your schema (for graphql >= `1.5.0`).
+Use `GraphQL::Batch` as a plugin in your schema _after_ specifying the mutation
+so that `GraphQL::Batch` can extend the mutation fields to clear the cache after
+they are resolved (for graphql >= `1.5.0`).
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -67,15 +69,6 @@ MySchema = GraphQL::Schema.define do
 
   GraphQL::Batch.use(self)
 end
-```
-
-##### With `1.9.0`'s `Interpreter` runtime
-
-Add `GraphQL::Batch` _after_ the interpreter, so that `GraphQL::Batch` can detect the interpreter and attach the right integrations:
-
-```ruby
-use GraphQL::Execution::Interpreter
-use GraphQL::Batch
 ```
 
 #### Field Usage
