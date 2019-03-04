@@ -39,6 +39,8 @@ module GraphQL
       end
       schema_defn.lazy_resolve(::Promise, :sync)
     end
+
+    autoload :LoadedFieldExtension, 'graphql/batch/loaded_field_extension'
   end
 end
 
