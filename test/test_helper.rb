@@ -4,5 +4,6 @@ require 'graphql/batch'
 require_relative 'support/loaders'
 require_relative 'support/schema'
 require_relative 'support/db'
+require_relative 'support/query_collector'
 
 require 'minitest/autorun'

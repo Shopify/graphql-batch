@@ -1,16 +1,7 @@
 require_relative 'test_helper'
 
 class GraphQL::GraphQLTest < Minitest::Test
-  attr_reader :queries
-
-  def setup
-    @queries = []
-    QueryNotifier.subscriber = ->(query) { @queries << query }
-  end
-
-  def teardown
-    QueryNotifier.subscriber = nil
-  end
+  include QueryCollector
 
   def test_no_queries
     query_string = '{ constant }'
