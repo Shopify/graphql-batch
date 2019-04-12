@@ -92,7 +92,7 @@ field :products, [Types::Product, null: true], null: false do
   argument :ids, [ID], required: true
 end
 
-def product(ids:)
+def products(ids:)
   RecordLoader.for(Product).load_many(ids)
 end
 ```
