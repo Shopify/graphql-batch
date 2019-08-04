@@ -143,11 +143,11 @@ end
 ```ruby
 def product(id:)
   # Try the cache first ...
-  CacheLoader.for(Product).load(args["id"]).then(nil, lambda do |exc|
+  CacheLoader.for(Product).load(id).then(nil, lambda do |exc|
     # But if there's a connection error, go to the underlying database
     raise exc unless exc.is_a?(Redis::BaseConnectionError)
     logger.warn err.message
-    RecordLoader.for(Product).load(args["id"])
+    RecordLoader.for(Product).load(id)
   end)
 end
 ```
