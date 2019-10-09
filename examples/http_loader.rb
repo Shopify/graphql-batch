@@ -2,6 +2,7 @@
 #
 # 1. https://github.com/httprb/http
 # 2. https://github.com/mperham/connection_pool
+# 3. https://github.com/ruby-concurrency/concurrent-ruby
 #
 # Setup:
 #
@@ -43,13 +44,13 @@ module Loaders
     end
 
     def perform(operations)
-      threads = operations.map do |operation|
-        Thread.new do
+      futures = operations.map do |operation|
+        Concurrent::Promises.future do
           pool.with { |connection| operation.call(connection) }
         end
       end
       operations.each_with_index.each do |operation, index|
-        fulfill(operation, threads[index].value)
+        fulfill(operation, futures[index].value)
       end
     end
 
