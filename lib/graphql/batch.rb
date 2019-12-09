@@ -16,16 +16,18 @@ module GraphQL
     end
 
     def self.use(schema_defn, executor_class: GraphQL::Batch::Executor)
-      schema = schema_defn.target
-      if GraphQL::VERSION >= "1.6.0"
+      # Support 1.10+ which passes the class instead of the definition proxy
+      schema = schema_defn.is_a?(Class) ? schema_defn : schema_defn.target
+      current_gem_version = Gem::Version.new(GraphQL::VERSION)
+      if current_gem_version >= Gem::Version.new("1.6.0")
         instrumentation = GraphQL::Batch::SetupMultiplex.new(schema, executor_class: executor_class)
         schema_defn.instrument(:multiplex, instrumentation)
         if schema.mutation
-          if Gem::Version.new(GraphQL::VERSION) >= Gem::Version.new('1.9.0.pre3') &&
-              schema.mutation.metadata[:type_class]
+          if current_gem_version >= Gem::Version.new('1.9.0.pre3') &&
+              (schema.mutation.is_a?(Class) || schema.mutation.metadata[:type_class])
             require_relative "batch/mutation_field_extension"
             schema.mutation.fields.each do |name, f|
-              field = f.metadata[:type_class]
+              field = f.respond_to?(:type_class) ? f.type_class : f.metadata[:type_class]
               field.extension(GraphQL::Batch::MutationFieldExtension)
             end
           else

@@ -3,5 +3,5 @@ source 'https://rubygems.org'
 gemspec
 
 if ENV["TESTING_INTERPRETER"] == "true"
-  gem "graphql", "1.9.0.pre4"
+  gem "graphql", "1.10.0.pre2"
 end
