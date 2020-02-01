@@ -5,3 +5,6 @@ rvm:
 env:
   - TESTING_INTERPRETER=true
   - TESTING_INTERPRETER=false
+script:
+  - bundle exec rake
+  - bundle exec rubocop
