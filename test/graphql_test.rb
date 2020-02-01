@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'test_helper'
 
 class GraphQL::GraphQLTest < Minitest::Test
@@ -16,8 +18,8 @@ class GraphQL::GraphQLTest < Minitest::Test
     query_string = '{ constant }'
     result = Schema.execute(query_string)
     expected = {
-      "data" => {
-        "constant" => "constant value"
+      'data' => {
+        'constant' => 'constant value'
       }
     }
     assert_equal expected, result
@@ -35,15 +37,15 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = {
-      "data" => {
-        "product" => {
-          "id" => "1",
-          "title" => "Shirt",
+      'data' => {
+        'product' => {
+          'id' => '1',
+          'title' => 'Shirt'
         }
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/1"], queries
+    assert_equal ['Product/1'], queries
   end
 
   def test_batched_find_by_id
@@ -55,13 +57,13 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = {
-      "data" => {
-        "product1" => { "id" => "1", "title" => "Shirt" },
-        "product2" => { "id" => "2", "title" => "Pants" },
+      'data' => {
+        'product1' => { 'id' => '1', 'title' => 'Shirt' },
+        'product2' => { 'id' => '2', 'title' => 'Pants' }
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/1,2"], queries
+    assert_equal ['Product/1,2'], queries
   end
 
   def test_record_missing
@@ -74,9 +76,9 @@ class GraphQL::GraphQLTest < Minitest::Test
       }
     GRAPHQL
     result = Schema.execute(query_string)
-    expected = { "data" => { "product" => nil } }
+    expected = { 'data' => { 'product' => nil } }
     assert_equal expected, result
-    assert_equal ["Product/123"], queries
+    assert_equal ['Product/123'], queries
   end
 
   def test_non_null_field_that_raises_on_nullable_parent
@@ -89,7 +91,7 @@ class GraphQL::GraphQLTest < Minitest::Test
       }
     GRAPHQL
     result = Schema.execute(query_string)
-    expected = { 'data' => { 'product' => nil }, 'errors' => [{ 'message' => 'Error', 'locations' => [{ 'line' => 4, 'column' => 11 }], 'path' => ['product', 'nonNullButRaises'] }] }
+    expected = { 'data' => { 'product' => nil }, 'errors' => [{ 'message' => 'Error', 'locations' => [{ 'line' => 4, 'column' => 11 }], 'path' => %w[product nonNullButRaises] }] }
     assert_equal expected, result
   end
 
@@ -127,30 +129,30 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = {
-      "data" => {
-        "products" => [
+      'data' => {
+        'products' => [
           {
-            "id" => "1",
-            "title" => "Shirt",
-            "variants" => [
-              { "id" => "1", "title" => "Red" },
-              { "id" => "2", "title" => "Blue" },
-            ],
+            'id' => '1',
+            'title' => 'Shirt',
+            'variants' => [
+              { 'id' => '1', 'title' => 'Red' },
+              { 'id' => '2', 'title' => 'Blue' }
+            ]
           },
           {
-            "id" => "2",
-            "title" => "Pants",
-            "variants" => [
-              { "id" => "4", "title" => "Small" },
-              { "id" => "5", "title" => "Medium" },
-              { "id" => "6", "title" => "Large" },
-            ],
+            'id' => '2',
+            'title' => 'Pants',
+            'variants' => [
+              { 'id' => '4', 'title' => 'Small' },
+              { 'id' => '5', 'title' => 'Medium' },
+              { 'id' => '6', 'title' => 'Large' }
+            ]
           }
         ]
       }
     }
     assert_equal expected, result
-    assert_equal ["Product?limit=2", "Product/1,2/variants"], queries
+    assert_equal ['Product?limit=2', 'Product/1,2/variants'], queries
   end
 
   def test_query_group_with_single_query
@@ -169,32 +171,32 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = {
-      "data" => {
-        "products" => [
+      'data' => {
+        'products' => [
           {
-            "id" => "1",
-            "title" => "Shirt",
-            "variantsCount" => 2,
-            "variants" => [
-              { "id" => "1", "title" => "Red" },
-              { "id" => "2", "title" => "Blue" },
-            ],
+            'id' => '1',
+            'title' => 'Shirt',
+            'variantsCount' => 2,
+            'variants' => [
+              { 'id' => '1', 'title' => 'Red' },
+              { 'id' => '2', 'title' => 'Blue' }
+            ]
           },
           {
-            "id" => "2",
-            "title" => "Pants",
-            "variantsCount" => 3,
-            "variants" => [
-              { "id" => "4", "title" => "Small" },
-              { "id" => "5", "title" => "Medium" },
-              { "id" => "6", "title" => "Large" },
-            ],
+            'id' => '2',
+            'title' => 'Pants',
+            'variantsCount' => 3,
+            'variants' => [
+              { 'id' => '4', 'title' => 'Small' },
+              { 'id' => '5', 'title' => 'Medium' },
+              { 'id' => '6', 'title' => 'Large' }
+            ]
           }
         ]
       }
     }
     assert_equal expected, result
-    assert_equal ["Product?limit=2", "Product/1,2/variants"], queries
+    assert_equal ['Product?limit=2', 'Product/1,2/variants'], queries
   end
 
   def test_sub_queries
@@ -205,12 +207,12 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = {
-      "data" => {
-        "productVariantsCount" => 3
+      'data' => {
+        'productVariantsCount' => 3
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/2", "Product/2/variants"], queries
+    assert_equal ['Product/2', 'Product/2/variants'], queries
   end
 
   def test_query_group_with_sub_queries
@@ -223,18 +225,18 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = {
-      "data" => {
-        "product" => {
-          "images" => [
-            { "id" => "1", "filename" => "shirt.jpg" },
-            { "id" => "4", "filename" => "red-shirt.jpg" },
-            { "id" => "5", "filename" => "blue-shirt.jpg" },
+      'data' => {
+        'product' => {
+          'images' => [
+            { 'id' => '1', 'filename' => 'shirt.jpg' },
+            { 'id' => '4', 'filename' => 'red-shirt.jpg' },
+            { 'id' => '5', 'filename' => 'blue-shirt.jpg' }
           ]
         }
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/1", "Image/1", "Product/1/variants", "ProductVariant/1,2/images"], queries
+    assert_equal ['Product/1', 'Image/1', 'Product/1/variants', 'ProductVariant/1,2/images'], queries
   end
 
   def test_load_list_of_objects_with_loaded_field
@@ -251,28 +253,28 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = {
-      "data" => {
-        "products" => [
+      'data' => {
+        'products' => [
           {
-            "id" => "1",
-            "variants" => [
-              { "id" => "1", "imageIds" => ["4"] },
-              { "id" => "2", "imageIds" => ["5"] },
-            ],
+            'id' => '1',
+            'variants' => [
+              { 'id' => '1', 'imageIds' => ['4'] },
+              { 'id' => '2', 'imageIds' => ['5'] }
+            ]
           },
           {
-            "id" => "2",
-            "variants" => [
-              { "id" => "4", "imageIds" => [] },
-              { "id" => "5", "imageIds" => [] },
-              { "id" => "6", "imageIds" => [] },
-            ],
+            'id' => '2',
+            'variants' => [
+              { 'id' => '4', 'imageIds' => [] },
+              { 'id' => '5', 'imageIds' => [] },
+              { 'id' => '6', 'imageIds' => [] }
+            ]
           }
         ]
       }
     }
     assert_equal expected, result
-    assert_equal ["Product?limit=2", "Product/1,2/variants", "ProductVariant/1,2,4,5,6/images"], queries
+    assert_equal ['Product?limit=2', 'Product/1,2/variants', 'ProductVariant/1,2,4,5,6/images'], queries
   end
 
   def test_loader_reused_after_loading
@@ -291,18 +293,18 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = {
-      "data" => {
-        "product" => {
-          "variants" => [
-            { "id" => "4", "product" => { "id" => "2", "title" => "Pants" } },
-            { "id" => "5", "product" => { "id" => "2", "title" => "Pants" } },
-            { "id" => "6", "product" => { "id" => "2", "title" => "Pants" } },
-          ],
+      'data' => {
+        'product' => {
+          'variants' => [
+            { 'id' => '4', 'product' => { 'id' => '2', 'title' => 'Pants' } },
+            { 'id' => '5', 'product' => { 'id' => '2', 'title' => 'Pants' } },
+            { 'id' => '6', 'product' => { 'id' => '2', 'title' => 'Pants' } }
+          ]
         }
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/2", "Product/2/variants"], queries
+    assert_equal ['Product/2', 'Product/2/variants'], queries
   end
 
   def test_load_error
@@ -314,8 +316,8 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = {
-      "data" => { "constant"=>"constant value", "loadExecutionError" => nil },
-      "errors" => [{ "message" => "test error message", "locations"=>[{"line"=>3, "column"=>9}], "path" => ["loadExecutionError"] }],
+      'data' => { 'constant' => 'constant value', 'loadExecutionError' => nil },
+      'errors' => [{ 'message' => 'test error message', 'locations' => [{ 'line' => 3, 'column' => 9 }], 'path' => ['loadExecutionError'] }]
     }
     assert_equal expected, result
   end
@@ -331,11 +333,11 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string, context: { counter: [0] })
     expected = {
-      "data" => {
-        "count1" => 0,
-        "incr1" => { "value" => 1, "loadValue" => 1 },
-        "count2" => 1,
-        "incr2" => { "value" => 2, "loadValue" => 2 },
+      'data' => {
+        'count1' => 0,
+        'incr1' => { 'value' => 1, 'loadValue' => 1 },
+        'count2' => 1,
+        'incr2' => { 'value' => 2, 'loadValue' => 2 }
       }
     }
     assert_equal expected, result
@@ -356,18 +358,18 @@ class GraphQL::GraphQLTest < Minitest::Test
     GRAPHQL
     result = Schema.execute(query_string)
     expected = {
-      "data" => {
-        "mutation1" => {
-          "product1" => { "id" => "1", "title" => "Shirt" },
-          "product2" => { "id" => "2", "title" => "Pants" },
+      'data' => {
+        'mutation1' => {
+          'product1' => { 'id' => '1', 'title' => 'Shirt' },
+          'product2' => { 'id' => '2', 'title' => 'Pants' }
         },
-        "mutation2" => {
-          "product1" => { "id" => "2", "title" => "Pants" },
-          "product2" => { "id" => "3", "title" => "Sweater" },
+        'mutation2' => {
+          'product1' => { 'id' => '2', 'title' => 'Pants' },
+          'product2' => { 'id' => '3', 'title' => 'Sweater' }
         }
       }
     }
     assert_equal expected, result
-    assert_equal ["Product/1,2", "Product/2,3"], queries
+    assert_equal ['Product/1,2', 'Product/2,3'], queries
   end
 end

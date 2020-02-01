@@ -1,5 +1,7 @@
-require "graphql"
-require "promise.rb"
+# frozen_string_literal: true
+
+require 'graphql'
+require 'promise.rb'
 
 module GraphQL
   module Batch
@@ -7,26 +9,24 @@ module GraphQL
     class NoExecutorError < StandardError; end
 
     def self.batch(executor_class: GraphQL::Batch::Executor)
-      begin
-        GraphQL::Batch::Executor.start_batch(executor_class)
-        ::Promise.sync(yield)
-      ensure
-        GraphQL::Batch::Executor.end_batch
-      end
+      GraphQL::Batch::Executor.start_batch(executor_class)
+      ::Promise.sync(yield)
+    ensure
+      GraphQL::Batch::Executor.end_batch
     end
 
     def self.use(schema_defn, executor_class: GraphQL::Batch::Executor)
       # Support 1.10+ which passes the class instead of the definition proxy
       schema = schema_defn.is_a?(Class) ? schema_defn : schema_defn.target
       current_gem_version = Gem::Version.new(GraphQL::VERSION)
-      if current_gem_version >= Gem::Version.new("1.6.0")
+      if current_gem_version >= Gem::Version.new('1.6.0')
         instrumentation = GraphQL::Batch::SetupMultiplex.new(schema, executor_class: executor_class)
         schema_defn.instrument(:multiplex, instrumentation)
         if schema.mutation
           if current_gem_version >= Gem::Version.new('1.9.0.pre3') &&
-              (schema.mutation.is_a?(Class) || schema.mutation.metadata[:type_class])
-            require_relative "batch/mutation_field_extension"
-            schema.mutation.fields.each do |name, f|
+             (schema.mutation.is_a?(Class) || schema.mutation.metadata[:type_class])
+            require_relative 'batch/mutation_field_extension'
+            schema.mutation.fields.each do |_name, f|
               field = f.respond_to?(:type_class) ? f.type_class : f.metadata[:type_class]
               field.extension(GraphQL::Batch::MutationFieldExtension)
             end
@@ -44,8 +44,8 @@ module GraphQL
   end
 end
 
-require_relative "batch/version"
-require_relative "batch/loader"
-require_relative "batch/executor"
-require_relative "batch/setup"
-require_relative "batch/setup_multiplex"
+require_relative 'batch/version'
+require_relative 'batch/loader'
+require_relative 'batch/executor'
+require_relative 'batch/setup'
+require_relative 'batch/setup_multiplex'

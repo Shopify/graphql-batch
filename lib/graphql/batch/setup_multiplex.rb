@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module GraphQL::Batch
   class SetupMultiplex
     def initialize(schema, executor_class:)
@@ -5,11 +7,11 @@ module GraphQL::Batch
       @executor_class = executor_class
     end
 
-    def before_multiplex(multiplex)
+    def before_multiplex(_multiplex)
       Setup.start_batching(@executor_class)
     end
 
-    def after_multiplex(multiplex)
+    def after_multiplex(_multiplex)
       Setup.end_batching
     end
 

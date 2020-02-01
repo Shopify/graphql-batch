@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RecordLoader < GraphQL::Batch::Loader
   def initialize(model)
     @model = model
@@ -41,6 +43,6 @@ class NilLoader < GraphQL::Batch::Loader
   end
 
   def perform(nils)
-    nils.each { |key| fulfill(nil, nil) }
+    nils.each { |_key| fulfill(nil, nil) }
   end
 end

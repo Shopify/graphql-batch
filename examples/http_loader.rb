@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # A sample HTTP loader using:
 #
 # 1. https://github.com/httprb/http
@@ -54,7 +56,7 @@ module Loaders
       end
     end
 
-  private
+    private
 
     def pool
       @pool ||= ConnectionPool.new(size: @size, timeout: @timeout) do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'test_helper'
 
 class GraphQL::Batch::ExecutorTest < Minitest::Test
@@ -16,7 +18,7 @@ class GraphQL::Batch::ExecutorTest < Minitest::Test
   class TestLoader < GraphQL::Batch::Loader
     attr_reader :number, :loading_in_perform
 
-    def initialize(number)
+    def initialize(_number)
       @number
     end
 

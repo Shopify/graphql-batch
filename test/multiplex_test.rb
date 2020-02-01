@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'test_helper'
 
 class GraphQL::MultiplexTest < Minitest::Test
@@ -21,26 +23,26 @@ class GraphQL::MultiplexTest < Minitest::Test
     GRAPHQL
 
     results = Schema.multiplex([
-      { query: query_string, variables: { "id1" => "1", "id2" => "2"} },
-      { query: query_string, variables: { "id1" => "1", "id2" => "3"}},
-    ])
+                                 { query: query_string, variables: { 'id1' => '1', 'id2' => '2' } },
+                                 { query: query_string, variables: { 'id1' => '1', 'id2' => '3' } }
+                               ])
 
     expected_1 = {
-      "data" => {
-        "first" => { "id" => "1", "title" => "Shirt" },
-        "second" => { "id" => "2", "title" => "Pants" },
+      'data' => {
+        'first' => { 'id' => '1', 'title' => 'Shirt' },
+        'second' => { 'id' => '2', 'title' => 'Pants' }
       }
     }
 
     expected_2 = {
-      "data" => {
-        "first" => { "id" => "1", "title" => "Shirt" },
-        "second" => { "id" => "3", "title" => "Sweater" },
+      'data' => {
+        'first' => { 'id' => '1', 'title' => 'Shirt' },
+        'second' => { 'id' => '3', 'title' => 'Sweater' }
       }
     }
 
     assert_equal expected_1, results.first
     assert_equal expected_2, results.last
-    assert_equal ["Product/1,2,3"], queries
+    assert_equal ['Product/1,2,3'], queries
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module GraphQL::Batch
   class Executor
     THREAD_KEY = :"#{name}.batched_queries"
@@ -23,6 +25,7 @@ module GraphQL::Batch
           raise NoExecutorError, 'Cannot end a batch without an Executor.'
         end
         return unless executor.decrement_level < 1
+
         self.current = nil
       end
     end

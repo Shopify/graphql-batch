@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module GraphQL::Batch
   class Setup
     class << self
@@ -11,9 +13,10 @@ module GraphQL::Batch
 
       def instrument_field(schema, type, field)
         return field unless type == schema.mutation
+
         old_resolve_proc = field.resolve_proc
         field.redefine do
-          resolve ->(obj, args, ctx) {
+          resolve lambda { |obj, args, ctx|
             GraphQL::Batch::Executor.current.clear
             begin
               ::Promise.sync(old_resolve_proc.call(obj, args, ctx))
@@ -30,11 +33,11 @@ module GraphQL::Batch
       @executor_class = executor_class
     end
 
-    def before_query(query)
+    def before_query(_query)
       Setup.start_batching(@executor_class)
     end
 
-    def after_query(query)
+    def after_query(_query)
       Setup.end_batching
     end
 

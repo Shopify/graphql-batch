@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ImageType < GraphQL::Schema::Object
   field :id, ID, null: false
   field :filename, String, null: false
@@ -63,14 +65,14 @@ class QueryType < GraphQL::Schema::Object
   field :constant, String, null: false
 
   def constant
-    "constant value"
+    'constant value'
   end
 
   field :load_execution_error, String, null: true
 
   def load_execution_error
-    RecordLoader.for(Product).load(1).then do |product|
-      raise GraphQL::ExecutionError, "test error message"
+    RecordLoader.for(Product).load(1).then do |_product|
+      raise GraphQL::ExecutionError, 'test error message'
     end
   end
 
@@ -153,11 +155,11 @@ class NoOpMutation < GraphQL::Schema::Mutation
   payload_type QueryType
 
   def resolve
-    Hash.new
+    {}
   end
 end
 
-if ENV["TESTING_INTERPRETER"] == "true"
+if ENV['TESTING_INTERPRETER'] == 'true'
   class MutationType < GraphQL::Schema::Object
     field :increment_counter, mutation: IncrementCounterMutation
     field :counter_loader, mutation: CounterLoaderMutation
@@ -165,20 +167,20 @@ if ENV["TESTING_INTERPRETER"] == "true"
   end
 else
   MutationType = GraphQL::ObjectType.define do
-    name "Mutation"
+    name 'Mutation'
 
     field :incrementCounter, CounterType.to_non_null_type do
       resolve ->(_, _, ctx) { ctx[:counter][0] += 1; CounterLoader.load(ctx[:counter]) }
     end
 
     field :counterLoader, !types.Int do
-      resolve ->(_, _, ctx) {
+      resolve lambda { |_, _, ctx|
         CounterLoader.load(ctx[:counter])
       }
     end
 
     field :noOp, QueryType.to_non_null_type do
-      resolve ->(_, _, ctx) { Hash.new }
+      resolve ->(_, _, _ctx) { {} }
     end
   end
 end
@@ -187,7 +189,7 @@ class Schema < GraphQL::Schema
   query QueryType
   mutation MutationType
 
-  if ENV["TESTING_INTERPRETER"] == "true"
+  if ENV['TESTING_INTERPRETER'] == 'true'
     use GraphQL::Execution::Interpreter
     # This probably has no effect, but just to get the full test:
     use GraphQL::Analysis::AST

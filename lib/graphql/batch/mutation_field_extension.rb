@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module GraphQL::Batch
   class MutationFieldExtension < GraphQL::Schema::FieldExtension
     def resolve(object:, arguments:, **_rest)

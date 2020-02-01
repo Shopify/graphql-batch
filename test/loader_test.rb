@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require_relative 'test_helper'
 
 class GraphQL::Batch::LoaderTest < Minitest::Test
   class GroupCountLoader < GraphQL::Batch::Loader
-    def initialize(key)
-    end
+    def initialize(key); end
 
     def perform(keys)
       keys.each { |key| fulfill(key, keys.size) }
@@ -23,8 +24,7 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   class BrokenLoader < GraphQL::Batch::Loader
-    def perform(keys)
-    end
+    def perform(keys); end
   end
 
   class DerivedCacheKeyLoader < EchoLoader
@@ -61,15 +61,15 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
   def test_query_group
     group = Promise.all([
-      GroupCountLoader.for('two').load(:a),
-      GroupCountLoader.for('one').load(:a),
-      GroupCountLoader.for('two').load(:b),
-    ])
+                          GroupCountLoader.for('two').load(:a),
+                          GroupCountLoader.for('one').load(:a),
+                          GroupCountLoader.for('two').load(:b)
+                        ])
     assert_equal [2, 1, 2], group.sync
   end
 
   def test_query_many
-    assert_equal [:a, :b, :c], EchoLoader.load_many([:a, :b, :c]).sync
+    assert_equal %i[a b c], EchoLoader.load_many(%i[a b c]).sync
   end
 
   def test_empty_group_query
@@ -82,19 +82,19 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
   def test_group_query_with_some_queries
     group = Promise.all([
-      GroupCountLoader.for("two").load(:a),
-      'one',
-      GroupCountLoader.for("two").load(:b),
-    ])
+                          GroupCountLoader.for('two').load(:a),
+                          'one',
+                          GroupCountLoader.for('two').load(:b)
+                        ])
     assert_equal [2, 'one', 2], group.sync
   end
 
   def test_then
-    assert_equal 3, GroupCountLoader.for("single").load(:a).then { |value| value + 2 }.sync
+    assert_equal 3, GroupCountLoader.for('single').load(:a).then { |value| value + 2 }.sync
   end
 
   def test_then_error
-    query = GroupCountLoader.for("single").load(:a).then { raise "oops" }
+    query = GroupCountLoader.for('single').load(:a).then { raise 'oops' }
     err = assert_raises(RuntimeError) do
       query.sync
     end
@@ -102,11 +102,11 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   def test_on_reject_without_error
-    assert_equal 3, GroupCountLoader.for("single").load(:a).then { |value| value + 2 }.then(nil, ->(err) { err.message }).sync
+    assert_equal 3, GroupCountLoader.for('single').load(:a).then { |value| value + 2 }.then(nil, ->(err) { err.message }).sync
   end
 
   def test_rescue_with_error
-    query = GroupCountLoader.for("single").load(:a).then { raise "oops" }.then(nil, ->(err) { err.message })
+    query = GroupCountLoader.for('single').load(:a).then { raise 'oops' }.then(nil, ->(err) { err.message })
     assert_equal 'oops', query.sync
   end
 
@@ -123,9 +123,9 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
   def test_loader_class_grouping
     group = Promise.all([
-      EchoLoader.load(:a),
-      IncrementLoader.load(1),
-    ])
+                          EchoLoader.load(:a),
+                          IncrementLoader.load(1)
+                        ])
     assert_equal [:a, 2], group.sync
   end
 
@@ -150,7 +150,7 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   def test_derived_cache_key
-    assert_equal [:a, :b, :a], DerivedCacheKeyLoader.load_many([:a, :b, "a"]).sync
+    assert_equal %i[a b a], DerivedCacheKeyLoader.load_many([:a, :b, 'a']).sync
   end
 
   def test_loader_for_without_load
@@ -162,16 +162,16 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     loader1 = GroupCountLoader.new('one')
     loader2 = GroupCountLoader.new('two')
     group = Promise.all([
-      loader2.load(:a),
-      loader1.load(:a),
-      loader2.load(:b),
-    ])
+                          loader2.load(:a),
+                          loader1.load(:a),
+                          loader2.load(:b)
+                        ])
     assert_equal [2, 1, 2], group.sync
   end
 
   def test_loader_with_failing_perform
     error_message = nil
-    promise = ExplodingLoader.load([1]).then(nil, ->(err) { error_message = err.message } ).sync
+    promise = ExplodingLoader.load([1]).then(nil, ->(err) { error_message = err.message }).sync
     assert_equal 'perform failed', error_message
   end
 end

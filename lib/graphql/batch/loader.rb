@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module GraphQL::Batch
   class Loader
     def self.for(*group_args)
@@ -41,12 +43,13 @@ module GraphQL::Batch
 
     def resolve #:nodoc:
       return if resolved?
+
       load_keys = queue
       @queue = nil
       perform(load_keys)
       check_for_broken_promises(load_keys)
-    rescue => err
-      reject_pending_promises(load_keys, err)
+    rescue StandardError => e
+      reject_pending_promises(load_keys, e)
     end
 
     # For Promise#sync
@@ -83,7 +86,7 @@ module GraphQL::Batch
     end
 
     # Must override to load the keys and call #fulfill for each key
-    def perform(keys)
+    def perform(_keys)
       raise NotImplementedError
     end
 
@@ -97,6 +100,7 @@ module GraphQL::Batch
     def finish_resolve(key)
       promise = promise_for(key)
       return yield(promise) unless executor
+
       executor.around_promise_callbacks do
         yield promise
       end
