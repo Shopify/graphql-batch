@@ -157,7 +157,7 @@ class NoOpMutation < GraphQL::Schema::Mutation
   end
 end
 
-if ENV["TESTING_INTERPRETER"] == "true"
+if ENV["TESTING_LEGACY_DEFINITION_LAYER"] != "true"
   class MutationType < GraphQL::Schema::Object
     field :increment_counter, mutation: IncrementCounterMutation
     field :counter_loader, mutation: CounterLoaderMutation
@@ -187,7 +187,7 @@ class Schema < GraphQL::Schema
   query QueryType
   mutation MutationType
 
-  if ENV["TESTING_INTERPRETER"] == "true"
+  if ENV["TESTING_LEGACY_DEFINITION_LAYER"] != "true"
     use GraphQL::Execution::Interpreter
     # This probably has no effect, but just to get the full test:
     use GraphQL::Analysis::AST
