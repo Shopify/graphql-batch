@@ -14,10 +14,9 @@ class GraphQL::Batch::ExecutorTest < Minitest::Test
   end
 
   class TestLoader < GraphQL::Batch::Loader
-    attr_reader :number, :loading_in_perform
+    attr_reader :loading_in_perform
 
-    def initialize(number)
-      @number
+    def initialize(_number)
     end
 
     def perform(keys)

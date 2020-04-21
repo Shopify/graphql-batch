@@ -154,7 +154,7 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
   end
 
   def test_loader_for_without_load
-    loader = EchoLoader.for
+    EchoLoader.for
     GraphQL::Batch::Executor.current.wait_all
   end
 
@@ -171,7 +171,7 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
   def test_loader_with_failing_perform
     error_message = nil
-    promise = ExplodingLoader.load([1]).then(nil, ->(err) { error_message = err.message } ).sync
+    ExplodingLoader.load([1]).then(nil, ->(err) { error_message = err.message } ).sync
     assert_equal 'perform failed', error_message
   end
 end

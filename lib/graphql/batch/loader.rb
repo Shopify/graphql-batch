@@ -30,7 +30,7 @@ module GraphQL::Batch
 
     def load(key)
       cache[cache_key(key)] ||= begin
-        queue << key
+        (@queue ||= []) << key
         ::Promise.new.tap { |promise| promise.source = self }
       end
     end
@@ -59,7 +59,7 @@ module GraphQL::Batch
     end
 
     def resolved?
-      @queue.nil? || @queue.empty?
+      queue.nil? || queue.empty?
     end
 
     protected
@@ -94,6 +94,8 @@ module GraphQL::Batch
 
     private
 
+    attr_reader :queue
+
     def finish_resolve(key)
       promise = promise_for(key)
       return yield(promise) unless executor
@@ -104,10 +106,6 @@ module GraphQL::Batch
 
     def cache
       @cache ||= {}
-    end
-
-    def queue
-      @queue ||= []
     end
 
     def promise_for(load_key)
