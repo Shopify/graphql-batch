@@ -8,7 +8,7 @@ module GraphQL::Batch
         end
       RUBY
     else
-      def self.for(*group_args, **group_kwargs)
+      def self.for(*group_args)
         current_executor.loader(loader_key_for(*group_args)) { new(*group_args) }
       end
     end
