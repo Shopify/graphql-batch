@@ -1,0 +1,24 @@
+name: Tests
+
+on:
+  push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [2.3, 2.6, 2.7]
+        graphql_version: ['1.9.19', '1.10.2']
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+        ruby-version: ${{ matrix.ruby }}
+      env:
+        GRAPHQL_VERSION: ${{ matrix.graphql_version }}
+        TESTING_LEGACY_DEFINITION_LAYER: ${{ startsWith(matrix.graphql_version, '1.9') }}
+    - run: bundle install
+    - run: bundle exec rake
