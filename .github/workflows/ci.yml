@@ -9,8 +9,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [2.3, 2.6, 2.7]
-        graphql_version: ['1.9.19', '1.10.2']
+        ruby: [2.3, 2.7, 3.0]
+        graphql_version: ['1.9.19', '1.11.6']
+        exclude:
+          - graphql_version: '1.9.19'
+            ruby: 3.0
     steps:
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
