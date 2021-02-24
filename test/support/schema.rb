@@ -157,41 +157,18 @@ class NoOpMutation < GraphQL::Schema::Mutation
   end
 end
 
-if ENV["TESTING_LEGACY_DEFINITION_LAYER"] != "true"
-  class MutationType < GraphQL::Schema::Object
-    field :increment_counter, mutation: IncrementCounterMutation
-    field :counter_loader, mutation: CounterLoaderMutation
-    field :no_op, mutation: NoOpMutation
-  end
-else
-  MutationType = GraphQL::ObjectType.define do
-    name "Mutation"
-
-    field :incrementCounter, CounterType.to_non_null_type do
-      resolve ->(_, _, ctx) { ctx[:counter][0] += 1; CounterLoader.load(ctx[:counter]) }
-    end
-
-    field :counterLoader, !types.Int do
-      resolve ->(_, _, ctx) {
-        CounterLoader.load(ctx[:counter])
-      }
-    end
-
-    field :noOp, QueryType.to_non_null_type do
-      resolve ->(_, _, ctx) { Hash.new }
-    end
-  end
+class MutationType < GraphQL::Schema::Object
+  field :increment_counter, mutation: IncrementCounterMutation
+  field :counter_loader, mutation: CounterLoaderMutation
+  field :no_op, mutation: NoOpMutation
 end
 
 class Schema < GraphQL::Schema
   query QueryType
   mutation MutationType
 
-  if ENV["TESTING_LEGACY_DEFINITION_LAYER"] != "true"
-    use GraphQL::Execution::Interpreter
-    # This probably has no effect, but just to get the full test:
-    use GraphQL::Analysis::AST
-  end
-
+  use GraphQL::Execution::Interpreter
+  # This probably has no effect, but just to get the full test:
+  use GraphQL::Analysis::AST
   use GraphQL::Batch
 end
