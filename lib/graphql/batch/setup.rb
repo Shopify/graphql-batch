@@ -13,14 +13,14 @@ module GraphQL::Batch
         return field unless type == schema.mutation
         old_resolve_proc = field.resolve_proc
         field.redefine do
-          resolve ->(obj, args, ctx) {
+          resolve(->(obj, args, ctx) {
             GraphQL::Batch::Executor.current.clear
             begin
               ::Promise.sync(old_resolve_proc.call(obj, args, ctx))
             ensure
               GraphQL::Batch::Executor.current.clear
             end
-          }
+          })
         end
       end
     end

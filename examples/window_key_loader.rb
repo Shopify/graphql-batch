@@ -45,6 +45,7 @@ class WindowKeyLoader < GraphQL::Batch::Loader
   attr_reader :model, :foreign_key, :limit, :order_col, :order_dir
 
   def initialize(model, foreign_key, limit:, order_col:, order_dir: :asc)
+    super
     @model = model
     @foreign_key = foreign_key
     @limit = limit

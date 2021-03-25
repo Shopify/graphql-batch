@@ -56,6 +56,13 @@ Layout/SpaceInsideParens:
   Exclude:
     - 'test/loader_test.rb'
 
+# Offense count: 3
+Lint/MissingSuper:
+  Exclude:
+    - 'test/executor_test.rb'
+    - 'test/loader_test.rb'
+    - 'test/support/loaders.rb'
+
 # Offense count: 5
 # Cop supports --auto-correct.
 # Configuration parameters: IgnoreEmptyBlocks, AllowUnusedKeywordArguments.
