@@ -7,9 +7,13 @@ Rake::TestTask.new(:test) do |t|
   t.test_files = FileList['test/**/*_test.rb']
 end
 
-task :rubocop do
-  require 'rubocop/rake_task'
-  RuboCop::RakeTask.new
-end
+task(default: :test)
 
-task(default: [:test, :rubocop])
+if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.4.0')
+  task :rubocop do
+    require 'rubocop/rake_task'
+    RuboCop::RakeTask.new
+  end
+
+  task(default: :rubocop)
+end
