@@ -35,6 +35,7 @@ class ActiveStorageLoader < GraphQL::Batch::Loader
   attr_reader :record_type, :attachment_name
 
   def initialize(record_type, attachment_name)
+    super
     @record_type = record_type
     @attachment_name = attachment_name
   end

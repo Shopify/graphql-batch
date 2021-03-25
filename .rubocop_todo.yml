@@ -56,14 +56,9 @@ Layout/SpaceInsideParens:
   Exclude:
     - 'test/loader_test.rb'
 
-# Offense count: 10
+# Offense count: 3
 Lint/MissingSuper:
   Exclude:
-    - 'examples/active_storage_loader.rb'
-    - 'examples/association_loader.rb'
-    - 'examples/http_loader.rb'
-    - 'examples/record_loader.rb'
-    - 'examples/window_key_loader.rb'
     - 'test/executor_test.rb'
     - 'test/loader_test.rb'
     - 'test/support/loaders.rb'
