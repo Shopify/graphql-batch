@@ -38,7 +38,7 @@
 module Loaders
   class HTTPLoader < GraphQL::Batch::Loader
     def initialize(host:, size: 4, timeout: 4)
-      super
+      super()
       @host = host
       @size = size
       @timeout = timeout
