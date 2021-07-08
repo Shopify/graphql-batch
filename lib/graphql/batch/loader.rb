@@ -140,7 +140,13 @@ module GraphQL::Batch
 
     def check_for_broken_promises(load_keys)
       load_keys.each do |key|
-        next unless promise_for(key).pending?
+        promise = promise_for(key)
+        # When a promise is fulfilled through this class, it will either:
+        #   become not pending, if fulfilled with a literal value
+        #   become pending with a new source if fulfilled with a promise
+        # Either of these is acceptable, promise.rb will automatically re-wait
+        # on the new source promise as needed.
+        next unless promise.pending? && promise.source == self
 
         reject(key, ::Promise::BrokenError.new("#{self.class} didn't fulfill promise for key #{key.inspect}"))
       end

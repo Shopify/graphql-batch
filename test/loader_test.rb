@@ -27,6 +27,12 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     end
   end
 
+  class NestedLoader < GraphQL::Batch::Loader
+    def perform(keys)
+      keys.each { |key| fulfill(key, EchoLoader.load(key)) }
+    end
+  end
+
   class DerivedCacheKeyLoader < EchoLoader
     def cache_key(load_key)
       load_key.to_s
@@ -119,6 +125,15 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     promise.wait
     assert_equal GraphQL::Batch::BrokenPromiseError, promise.reason.class
     assert_equal "#{BrokenLoader.name} didn't fulfill promise for key 1", promise.reason.message
+  end
+
+  def test_nested_promise_loader_check
+    promise = NestedLoader.load(1)
+    promise.wait
+    assert_equal false, promise.pending?
+    assert_equal false, promise.rejected?
+    assert_equal true, promise.fulfilled?
+    assert_equal 1, promise.value
   end
 
   def test_loader_class_grouping
