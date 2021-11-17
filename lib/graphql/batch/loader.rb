@@ -95,7 +95,15 @@ module GraphQL::Batch
 
     # Returns true when the key has already been fulfilled, otherwise returns false
     def fulfilled?(key)
-      promise_for(key).fulfilled?
+      promise = promise_for(key)
+      # When a promise is fulfilled through this class, it will either:
+      #   become fulfilled, if fulfilled with a literal value
+      #   become pending with a new source if fulfilled with a promise
+      # Either of these is acceptable, promise.rb will automatically re-wait
+      # on the new source promise as needed.
+      return true if promise.fulfilled?
+
+      promise.pending? && promise.source != self
     end
 
     # Must override to load the keys and call #fulfill for each key
