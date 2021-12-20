@@ -39,6 +39,24 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     end
   end
 
+  class FulfillingStatusLoader < GraphQL::Batch::Loader
+    def perform(keys)
+      keys.each do |key|
+        fulfill(key, key)
+        fulfill(key, fulfilled?(key))
+      end
+    end
+  end
+
+  class FulfillingStatusNestedLoader < GraphQL::Batch::Loader
+    def perform(keys)
+      keys.each do |key|
+        fulfill(key, EchoLoader.load(key))
+        fulfill(key, fulfilled?(key))
+      end
+    end
+  end
+
   class ExplodingLoader < GraphQL::Batch::Loader
     def perform(_keys)
       raise 'perform failed'
@@ -162,6 +180,14 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
 
     assert_equal :b, promise.sync
     assert_equal :c, promise2.sync
+  end
+
+  def test_fulfilling_status
+    assert FulfillingStatusLoader.load(1).sync
+  end
+
+  def test_nested_loader_fulfilling_status
+    assert FulfillingStatusNestedLoader.load(1).sync
   end
 
   def test_derived_cache_key
