@@ -34,7 +34,7 @@ module GraphQL::Batch
         unless executor
           raise GraphQL::Batch::NoExecutorError, 'Cannot create loader without'\
             ' an Executor. Wrap the call to `for` with `GraphQL::Batch.batch`'\
-            ' or use `GraphQL::Batch::Setup` as a query instrumenter if'\
+            ' or use `GraphQL::Batch::SetupMultiplex` as a query instrumenter if'\
             ' using with `graphql-ruby`'
         end
 
