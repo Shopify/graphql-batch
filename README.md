@@ -50,7 +50,7 @@ end
 
 Use `GraphQL::Batch` as a plugin in your schema _after_ specifying the mutation
 so that `GraphQL::Batch` can extend the mutation fields to clear the cache after
-they are resolved (for graphql >= `1.5.0`).
+they are resolved.
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -58,16 +58,6 @@ class MySchema < GraphQL::Schema
   mutation MyMutationType
 
   use GraphQL::Batch
-end
-```
-
-For pre `1.5.0` versions:
-
-```ruby
-MySchema = GraphQL::Schema.define do
-  query MyQueryType
-
-  GraphQL::Batch.use(self)
 end
 ```
 
@@ -155,19 +145,19 @@ end
 ## Unit Testing
 
 Your loaders can be tested outside of a GraphQL query by doing the
-batch loads in a block passed to GraphQL::Batch.batch.  That method
+batch loads in a block passed to `GraphQL::Batch.batch`. That method
 will set up thread-local state to store the loaders, batch load any
 promise returned from the block then clear the thread-local state
 to avoid leaking state between tests.
 
 ```ruby
-  def test_single_query
-    product = products(:snowboard)
-    title = GraphQL::Batch.batch do
-      RecordLoader.for(Product).load(product.id).then(&:title)
-    end
-    assert_equal product.title, title
+def test_single_query
+  product = products(:snowboard)
+  title = GraphQL::Batch.batch do
+    RecordLoader.for(Product).load(product.id).then(&:title)
   end
+  assert_equal product.title, title
+end
 ```
 
 ## Development
