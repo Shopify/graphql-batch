@@ -167,7 +167,5 @@ class Schema < GraphQL::Schema
   query QueryType
   mutation MutationType
 
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
   use GraphQL::Batch
 end
