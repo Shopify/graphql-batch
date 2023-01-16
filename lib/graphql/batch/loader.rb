@@ -44,6 +44,13 @@ module GraphQL::Batch
 
     attr_accessor :loader_key, :executor
 
+    def initialize
+      @loader_key = nil
+      @executor = nil
+      @queue = nil
+      @cache = nil
+    end
+
     def load(key)
       cache[cache_key(key)] ||= begin
         queue << key
