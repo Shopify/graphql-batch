@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata['allowed_push_host'] = "https://rubygems.org"
 
-  spec.add_runtime_dependency "graphql", ">= 1.10", "< 3"
+  spec.add_runtime_dependency "graphql", ">= 1.12.18", "< 3"
   spec.add_runtime_dependency "promise.rb", "~> 0.7.2"
 
   spec.add_development_dependency "byebug" if RUBY_ENGINE == 'ruby'
