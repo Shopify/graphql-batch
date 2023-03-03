@@ -35,6 +35,7 @@
 #     }
 #   GQL
 
+# An example loader which is blocking and synchronous as a whole, but executes all of its operations concurrently.
 module Loaders
   class HTTPLoader < GraphQL::Batch::Loader
     def initialize(host:, size: 4, timeout: 4)
@@ -45,13 +46,19 @@ module Loaders
     end
 
     def perform(operations)
+      # This fans out and starts off all the concurrent work, which starts and
+      # immediately returns Concurrent::Promises::Future` objects for each operation.
       futures = operations.map do |operation|
         Concurrent::Promises.future do
           pool.with { |connection| operation.call(connection) }
         end
       end
+      # At this point, all of the concurrent work has been started.
+
+      # This converges back in, waiting on each concurrent future to finish, and fulfilling each
+      # (non-concurrent) Promise.rb promise.
       operations.each_with_index.each do |operation, index|
-        fulfill(operation, futures[index].value)
+        fulfill(operation, futures[index].value) # .value is a blocking call
       end
     end
 
