@@ -14,7 +14,7 @@
 # end
 
 ####
-# An example data type using the AttachmentLoader
+# An example data type using the Loaders::ActiveStorageLoader
 ####
 
 # class Types::EventType < Types::BaseObject
@@ -25,7 +25,7 @@
 #   field :pictures, String, null: true
 #
 #   def image
-#     AttachmentLoader.for(:Event, :image).load(object.id).then do |image|
+#     Loaders::ActiveStorageLoader.for(:Event, :image).load(object.id).then do |image|
 #       Rails.application.routes.url_helpers.url_for(
 #         image.variant({ quality: 75 })
 #       )
@@ -33,7 +33,7 @@
 #   end
 #
 #   def pictures
-#     AttachmentLoader.for(:Event, :pictures, association_type: :has_many_attached).load(object.id).then do |pictures|
+#     Loaders::ActiveStorageLoader.for(:Event, :pictures, association_type: :has_many_attached).load(object.id).then do |pictures|
 #       pictures.map do |picture|
 #         Rails.application.routes.url_helpers.url_for(
 #           picture.variant({ quality: 75 })
