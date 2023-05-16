@@ -66,10 +66,19 @@ module GraphQL::Batch
       return if resolved?
       load_keys = queue
       @queue = nil
-      perform(load_keys)
+
+      around_perform do
+        perform(load_keys)
+      end
+
       check_for_broken_promises(load_keys)
     rescue => err
       reject_pending_promises(load_keys, err)
+    end
+
+    # Interface to add custom code for purposes such as instrumenting the performance of the loader.
+    def around_perform
+      yield
     end
 
     # For Promise#sync
