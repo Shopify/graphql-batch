@@ -122,9 +122,7 @@ def all_collections
   Promise.all([
     CountLoader.for(Shop, :smart_collections).load(context.shop_id),
     CountLoader.for(Shop, :custom_collections).load(context.shop_id),
-  ]).then do |results|
-    results.reduce(&:+)
-  end
+  ]).then(&:sum)
 end
 ```
 
