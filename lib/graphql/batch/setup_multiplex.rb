@@ -14,7 +14,7 @@ module GraphQL::Batch
     end
 
     module Trace
-      def initialize(executor_class:, **_rest)
+      def initialize(executor_class: nil, **_rest)
         @executor_class = executor_class
         super
       end
