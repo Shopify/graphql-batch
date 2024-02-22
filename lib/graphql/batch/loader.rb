@@ -62,6 +62,10 @@ module GraphQL::Batch
       ::Promise.all(keys.map { |key| load(key) })
     end
 
+    def prime(key, value)
+      cache[cache_key(key)] ||= ::Promise.resolve(value).tap { |p| p.source = self }
+    end
+
     def resolve #:nodoc:
       return if resolved?
       load_keys = queue

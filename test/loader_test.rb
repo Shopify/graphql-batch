@@ -215,4 +215,40 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     promise = ExplodingLoader.load([1]).then(nil, ->(err) { error_message = err.message } ).sync
     assert_equal 'perform failed', error_message
   end
+
+  def test_prime
+    loader = EchoLoader.for
+    loader.prime(:a, :prepared_value)
+
+    assert_equal :prepared_value, loader.load(:a).sync
+    assert_equal [:prepared_value, :b, :c], loader.load_many([:a, :b, :c]).sync
+  end
+
+  def test_will_not_call_perform_if_fully_primed
+    loader = ExplodingLoader.for
+    loader.prime(:a, 1)
+    loader.prime(:b, 2)
+
+    assert_equal [1, 2], loader.load_many([:a, :b]).sync
+  end
+
+  def test_priming_a_key_already_in_queue_does_nothing
+    loader = EchoLoader.for
+
+    promise = loader.load(:a)
+
+    loader.prime(:a, :not_a)
+
+    assert_equal :a, promise.sync
+  end
+
+  def test_prime_will_not_replace_already_cached_value
+    loader = EchoLoader.for
+
+    assert_equal :a, loader.load(:a).sync
+
+    loader.prime(:a, :not_a)
+
+    assert_equal :a, loader.load(:a).sync
+  end
 end
