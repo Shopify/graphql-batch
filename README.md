@@ -140,6 +140,22 @@ def product(id:)
 end
 ```
 
+### Priming the Cache
+
+You can prime the loader cache with a specific value, which can be useful in certain situations.
+
+```ruby
+def liked_products
+  liked_products = Product.where(liked: true).load
+  liked_products.each do |product|
+    RecordLoader.for(Product).prime(product.id, product)
+  end
+end
+```
+
+Priming will add key/value to the loader cache only if it didn't exist before.
+
+
 ## Unit Testing
 
 Your loaders can be tested outside of a GraphQL query by doing the
