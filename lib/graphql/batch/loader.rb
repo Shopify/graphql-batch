@@ -66,7 +66,7 @@ module GraphQL::Batch
       cache[cache_key(key)] ||= ::Promise.resolve(value).tap { |p| p.source = self }
     end
 
-    def resolve #:nodoc:
+    def resolve # :nodoc:
       return if resolved?
       load_keys = queue
       @queue = nil
@@ -86,7 +86,7 @@ module GraphQL::Batch
     end
 
     # For Promise#sync
-    def wait #:nodoc:
+    def wait # :nodoc:
       if executor
         executor.resolve(self)
       else
