@@ -10,6 +10,8 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/Shopify/graphql-batch"
   spec.license       = "MIT"
 
+  spec.required_ruby_version = ">= 2.7"
+
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
@@ -17,7 +19,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata['allowed_push_host'] = "https://rubygems.org"
 
-  spec.add_runtime_dependency "graphql", ">= 1.12.18", "< 3"
+  spec.add_runtime_dependency "graphql", ">= 1.13", "< 3"
   spec.add_runtime_dependency "promise.rb", "~> 0.7.2"
 
   spec.add_development_dependency "byebug" if RUBY_ENGINE == 'ruby'

@@ -9,11 +9,9 @@ end
 
 task(default: :test)
 
-if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.4.0')
-  task :rubocop do
-    require 'rubocop/rake_task'
-    RuboCop::RakeTask.new
-  end
-
-  task(default: :rubocop)
+task :rubocop do
+  require 'rubocop/rake_task'
+  RuboCop::RakeTask.new
 end
+
+task(default: :rubocop)
