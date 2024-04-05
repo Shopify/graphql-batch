@@ -12,11 +12,6 @@ jobs:
       matrix:
         ruby: [2.7, 3.0, 3.1, 3.2, 3.3]
         graphql_version: ['~> 1.12.18', '~> 1.13', '~> 2.0']
-        include:
-          - ruby: 2.4
-            graphql_version: '~> 1.12.18'
-          - ruby: 2.4
-            graphql_version: '~> 1.13'
     steps:
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
