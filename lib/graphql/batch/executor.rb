@@ -53,6 +53,19 @@ module GraphQL::Batch
       @loading = was_loading
     end
 
+    def defer(_loader)
+      while (non_deferred_loader = @loaders.find { |_, loader| !loader.deferred })
+        resolve(non_deferred_loader)
+      end
+    end
+
+    def on_wait
+      # FIXME: Better name?
+      @loaders.each do |_, loader|
+        loader.on_any_wait
+      end
+    end
+
     def tick
       resolve(@loaders.shift.last)
     end

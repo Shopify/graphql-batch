@@ -42,13 +42,14 @@ module GraphQL::Batch
       end
     end
 
-    attr_accessor :loader_key, :executor
+    attr_accessor :loader_key, :executor, :deferred
 
     def initialize
       @loader_key = nil
       @executor = nil
       @queue = nil
       @cache = nil
+      @deferred = false
     end
 
     def load(key)
@@ -64,6 +65,14 @@ module GraphQL::Batch
 
     def prime(key, value)
       cache[cache_key(key)] ||= ::Promise.resolve(value).tap { |p| p.source = self }
+    end
+
+    def on_any_wait
+      return if resolved?
+      load_keys = queue # "Peek" the queue, but don't consume it.
+      # TODO: Should we have a "peek queue" / "async queue", that we can consume here, to prevent
+      # duplicate calls to perform_on_wait? (perform_on_wait should be idempotent anyway, but...)
+      perform_on_wait(load_keys)
     end
 
     def resolve # :nodoc:
@@ -88,6 +97,7 @@ module GraphQL::Batch
     # For Promise#sync
     def wait # :nodoc:
       if executor
+        executor.on_wait
         executor.resolve(self)
       else
         resolve
@@ -126,6 +136,36 @@ module GraphQL::Batch
       promise.pending? && promise.source != self
     end
 
+    def perform_on_wait(keys)
+      # FIXME: Better name?
+      # Interface to add custom code to e.g. trigger async operations when any loader starts waiting.
+      # Example:
+      #
+      #   def initialize
+      #     super()
+      #     @futures = {}
+      #   end
+      #
+      #   def perform_on_wait(keys)
+      #     keys.each do |key|
+      #       future(key)
+      #     end
+      #   end
+      #
+      #   def perform(keys)
+      #     defer # let other non-async loaders run to completion first.
+      #     keys.each do |key|
+      #       future(key).value!
+      #     end
+      #   end
+      #
+      #   def future(key)
+      #     @futures[key] ||= Concurrent::Promises.future do
+      #       # Perform the async operation
+      #     end
+      #   end
+    end
+
     # Must override to load the keys and call #fulfill for each key
     def perform(keys)
       raise NotImplementedError
@@ -144,6 +184,13 @@ module GraphQL::Batch
       executor.around_promise_callbacks do
         yield promise
       end
+    end
+
+    def defer
+      @deferred = true
+      executor.defer(self)
+    ensure
+      @deferred = false
     end
 
     def cache
