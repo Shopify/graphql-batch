@@ -67,12 +67,11 @@ module GraphQL::Batch
       cache[cache_key(key)] ||= ::Promise.resolve(value).tap { |p| p.source = self }
     end
 
-    def on_any_wait
-      return if resolved?
-      load_keys = queue # "Peek" the queue, but don't consume it.
-      # TODO: Should we have a "peek queue" / "async queue", that we can consume here, to prevent
-      # duplicate calls to perform_on_wait? (perform_on_wait should be idempotent anyway, but...)
-      perform_on_wait(load_keys)
+    # Called when any GraphQL::Batch::Loader starts waiting. May be called more than once per loader, if
+    # the loader is waiting multiple times. Will not be called once per promise.
+    #
+    # Use GraphQL::Batch::Async for the common way to use this.
+    def on_any_loader_wait
     end
 
     def resolve # :nodoc:
@@ -136,36 +135,6 @@ module GraphQL::Batch
       promise.pending? && promise.source != self
     end
 
-    def perform_on_wait(keys)
-      # FIXME: Better name?
-      # Interface to add custom code to e.g. trigger async operations when any loader starts waiting.
-      # Example:
-      #
-      #   def initialize
-      #     super()
-      #     @futures = {}
-      #   end
-      #
-      #   def perform_on_wait(keys)
-      #     keys.each do |key|
-      #       future(key)
-      #     end
-      #   end
-      #
-      #   def perform(keys)
-      #     defer # let other non-async loaders run to completion first.
-      #     keys.each do |key|
-      #       future(key).value!
-      #     end
-      #   end
-      #
-      #   def future(key)
-      #     @futures[key] ||= Concurrent::Promises.future do
-      #       # Perform the async operation
-      #     end
-      #   end
-    end
-
     # Must override to load the keys and call #fulfill for each key
     def perform(keys)
       raise NotImplementedError
@@ -188,7 +157,7 @@ module GraphQL::Batch
 
     def defer
       @deferred = true
-      executor.defer(self)
+      executor.defer_to_other_loaders
     ensure
       @deferred = false
     end
