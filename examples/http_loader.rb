@@ -38,31 +38,46 @@
 # An example loader which is blocking and synchronous as a whole, but executes all of its operations concurrently.
 module Loaders
   class HTTPLoader < GraphQL::Batch::Loader
+    include GraphQL::Batch::Async
+
     def initialize(host:, size: 4, timeout: 4)
       super()
       @host = host
       @size = size
       @timeout = timeout
+      @futures = {}
+    end
+
+    def perform_early(operations)
+      # This fans out and starts off all the concurrent work, which starts and
+      # immediately returns Concurrent::Promises::Future` objects for each operation.
+      operations.each do |operation|
+        future(operation)
+      end
     end
 
     def perform(operations)
-      # This fans out and starts off all the concurrent work, which starts and
-      # immediately returns Concurrent::Promises::Future` objects for each operation.
+      # Collect the futures (and possibly trigger any newly added ones)
       futures = operations.map do |operation|
-        Concurrent::Promises.future do
-          pool.with { |connection| operation.call(connection) }
-        end
+        future(operation)
       end
+
       # At this point, all of the concurrent work has been started.
 
-      # This converges back in, waiting on each concurrent future to finish, and fulfilling each
+      # Now it converges back in, waiting on each concurrent future to finish, and fulfilling each
       # (non-concurrent) Promise.rb promise.
       operations.each_with_index.each do |operation, index|
-        fulfill(operation, futures[index].value) # .value is a blocking call
+        fulfill(operation, futures[index].value!) # .value is a blocking call
       end
     end
 
   private
+
+    def future(operation)
+      @futures[operation] ||= Concurrent::Promises.future do
+        pool.with { |connection| operation.call(connection) }
+      end
+    end
 
     def pool
       @pool ||= ConnectionPool.new(size: @size, timeout: @timeout) do

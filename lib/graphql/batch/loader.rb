@@ -42,13 +42,14 @@ module GraphQL::Batch
       end
     end
 
-    attr_accessor :loader_key, :executor
+    attr_accessor :loader_key, :executor, :deferred
 
     def initialize
       @loader_key = nil
       @executor = nil
       @queue = nil
       @cache = nil
+      @deferred = false
     end
 
     def load(key)
@@ -64,6 +65,13 @@ module GraphQL::Batch
 
     def prime(key, value)
       cache[cache_key(key)] ||= ::Promise.resolve(value).tap { |p| p.source = self }
+    end
+
+    # Called when any GraphQL::Batch::Loader starts waiting. May be called more than once per loader, if
+    # the loader is waiting multiple times. Will not be called once per promise.
+    #
+    # Use GraphQL::Batch::Async for the common way to use this.
+    def on_any_loader_wait
     end
 
     def resolve # :nodoc:
@@ -88,6 +96,7 @@ module GraphQL::Batch
     # For Promise#sync
     def wait # :nodoc:
       if executor
+        executor.on_wait
         executor.resolve(self)
       else
         resolve
@@ -144,6 +153,13 @@ module GraphQL::Batch
       executor.around_promise_callbacks do
         yield promise
       end
+    end
+
+    def defer
+      @deferred = true
+      executor.defer_to_other_loaders
+    ensure
+      @deferred = false
     end
 
     def cache

@@ -53,6 +53,22 @@ module GraphQL::Batch
       @loading = was_loading
     end
 
+    # Defer the resolution of the current loader, allowing other loaders to be resolved first.
+    # This is useful when the current loader has kicked off async or concurrent work, and don't need to
+    # block execution of the current thread until later.
+    def defer_to_other_loaders
+      while (non_deferred_loader = @loaders.find { |_, loader| !loader.deferred && !loader.resolved? })
+        resolve(non_deferred_loader)
+      end
+    end
+
+    def on_wait
+      # FIXME: Better name?
+      @loaders.each do |_, loader|
+        loader.on_any_loader_wait
+      end
+    end
+
     def tick
       resolve(@loaders.shift.last)
     end
