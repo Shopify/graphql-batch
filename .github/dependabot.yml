@@ -11,6 +11,10 @@ registries:
     username: ${{secrets.DEPENDENCIES_GITHUB_USER}}
     password: ${{secrets.DEPENDENCIES_GITHUB_TOKEN}}
 updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
   - package-ecosystem: bundler
     directory: "/"
     schedule:

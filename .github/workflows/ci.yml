@@ -13,8 +13,8 @@ jobs:
         ruby: [2.7, 3.0, 3.1, 3.2, 3.3]
         graphql_version: ['~> 1.13', '~> 2.0']
     steps:
-    - uses: actions/checkout@v2
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
+    - uses: ruby/setup-ruby@e34163cd15f4bb403dcd72d98e295997e6a55798 # v1.238.0
       with:
         bundler-cache: true
         ruby-version: ${{ matrix.ruby }}
