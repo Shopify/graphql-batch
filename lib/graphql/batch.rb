@@ -26,7 +26,7 @@ module GraphQL
       if schema_defn.mutation
         require_relative "batch/mutation_field_extension"
 
-        schema_defn.mutation.fields.each do |name, field|
+        schema_defn.mutation.all_field_definitions.map do |field|
           field.extension(GraphQL::Batch::MutationFieldExtension)
         end
       end
