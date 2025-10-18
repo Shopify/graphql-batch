@@ -8,5 +8,10 @@ module GraphQL::Batch
         GraphQL::Batch::Executor.current.clear
       end
     end
+
+    def after_resolve(value:, **_rest)
+      GraphQL::Batch::Executor.current.clear
+      value
+    end
   end
 end
