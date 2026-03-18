@@ -63,6 +63,21 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     end
   end
 
+  class KwargsGroupCountLoader < GraphQL::Batch::Loader
+    def initialize(group, key: :id, preload: true, not_found_value: nil, **conditions)
+    end
+
+    def perform(keys)
+      keys.each { |key| fulfill(key, keys.size) }
+    end
+
+    # Mimics RecordLoader.load: destructures kwargs with defaults and **rest,
+    # then re-passes them to .for()
+    def self.load_via_intermediary(group, load_key, key: :id, preload: true, not_found_value: nil, **conditions)
+      self.for(group, key: key, preload: preload, not_found_value: not_found_value, **conditions).load(load_key)
+    end
+  end
+
   def setup
     GraphQL::Batch::Executor.current = GraphQL::Batch::Executor.new
   end
@@ -90,6 +105,27 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
       GroupCountLoader.for('two').load(:b),
     ])
     assert_equal [2, 1, 2], group.sync
+  end
+
+  # Reproduces a Ruby 4.0 bug where kwargs forwarded through ... get mutated
+  # when they were destructured and re-assembled by an intermediary method.
+  # Direct .for() calls don't trigger this; the kwargs must pass through a
+  # method that destructures them into named parameters (with defaults and
+  # **rest) then re-passes them to .for().
+  def test_query_group_with_kwargs_via_intermediary
+    group = Promise.all([
+      KwargsGroupCountLoader.load_via_intermediary('two', :a),
+      KwargsGroupCountLoader.load_via_intermediary('one', :a),
+      KwargsGroupCountLoader.load_via_intermediary('two', :b),
+    ])
+    assert_equal [2, 1, 2], group.sync
+  end
+
+  def test_loader_key_not_mutated_by_for_via_intermediary
+    KwargsGroupCountLoader.load_via_intermediary('test', :a).sync
+    loader = GraphQL::Batch::Executor.current.instance_variable_get(:@loaders).values.first
+    expected_kwargs = { key: :id, preload: true, not_found_value: nil }
+    assert_equal expected_kwargs, loader.loader_key[1]
   end
 
   def test_query_many
