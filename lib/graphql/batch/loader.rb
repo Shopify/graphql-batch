@@ -1,10 +1,11 @@
 module GraphQL::Batch
   class Loader
-    # Use new argument forwarding syntax if available as an optimization
     if RUBY_ENGINE && Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("2.7")
       class_eval(<<~RUBY, __FILE__, __LINE__ + 1)
-        def self.for(...)
-          current_executor.loader(loader_key_for(...)) { new(...) }
+        def self.for(*group_args, **group_kwargs, &block)
+          current_executor.loader(loader_key_for(*group_args, **group_kwargs)) do
+            new(*group_args, **group_kwargs, &block)
+          end
         end
       RUBY
     else
