@@ -63,6 +63,22 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
     end
   end
 
+  class KwargsGroupCountLoader < GraphQL::Batch::Loader
+    def initialize(group, key: :id, preload: true, **conditions)
+    end
+
+    def perform(keys)
+      keys.each { |key| fulfill(key, keys.size) }
+    end
+
+    # Re-passes kwargs through a method that destructures them. On Ruby 4.0,
+    # `...` forwarding shares the kwargs hash across expansion sites, so
+    # destructuring in `new(...)` would drain the hash stored in the loader key.
+    def self.load_via_intermediary(group, load_key, key: :id, preload: true, **conditions)
+      self.for(group, key: key, preload: preload, **conditions).load(load_key)
+    end
+  end
+
   def setup
     GraphQL::Batch::Executor.current = GraphQL::Batch::Executor.new
   end
@@ -88,6 +104,15 @@ class GraphQL::Batch::LoaderTest < Minitest::Test
       GroupCountLoader.for('two').load(:a),
       GroupCountLoader.for('one').load(:a),
       GroupCountLoader.for('two').load(:b),
+    ])
+    assert_equal [2, 1, 2], group.sync
+  end
+
+  def test_query_group_with_kwargs_forwarded_via_intermediary
+    group = Promise.all([
+      KwargsGroupCountLoader.load_via_intermediary('two', :a),
+      KwargsGroupCountLoader.load_via_intermediary('one', :a),
+      KwargsGroupCountLoader.load_via_intermediary('two', :b),
     ])
     assert_equal [2, 1, 2], group.sync
   end
