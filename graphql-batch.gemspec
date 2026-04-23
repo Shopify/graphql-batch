@@ -25,4 +25,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "byebug" if RUBY_ENGINE == 'ruby'
   spec.add_development_dependency "rake", ">= 12.3.3"
   spec.add_development_dependency "minitest"
+  # graphql 1.13.x requires ostruct, which was removed from default gems in Ruby 4.0.
+  spec.add_development_dependency "ostruct"
 end
