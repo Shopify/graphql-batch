@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/Shopify/graphql-batch"
   spec.license       = "MIT"
 
-  spec.required_ruby_version = ">= 2.7"
+  spec.required_ruby_version = ">= 3.0"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
@@ -25,4 +25,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "byebug" if RUBY_ENGINE == 'ruby'
   spec.add_development_dependency "rake", ">= 12.3.3"
   spec.add_development_dependency "minitest"
+  # graphql 1.13.x requires ostruct, which was removed from default gems in Ruby 4.0.
+  spec.add_development_dependency "ostruct"
 end
