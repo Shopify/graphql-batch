@@ -1,9 +1,23 @@
-class ImageType < GraphQL::Schema::Object
+class BaseField < GraphQL::Schema::Field
+  def initialize(*args, **kwargs, &block)
+    if GraphQL::VERSION < "2.5"
+      kwargs.delete(:resolve_each)
+      kwargs.delete(:resolve_static)
+    end
+    super
+  end
+end
+
+class BaseObject < GraphQL::Schema::Object
+  field_class(BaseField)
+end
+
+class ImageType < BaseObject
   field :id, ID, null: false
   field :filename, String, null: false
 end
 
-class ProductVariantType < GraphQL::Schema::Object
+class ProductVariantType < BaseObject
   field :id, ID, null: false
   field :title, String, null: false
   field :image_ids, [ID, null: true], null: false, resolve_each: true
@@ -29,7 +43,7 @@ class ProductVariantType < GraphQL::Schema::Object
   end
 end
 
-class ProductType < GraphQL::Schema::Object
+class ProductType < BaseObject
   field :id, ID, null: false
   field :title, String, null: false
   field :images, [ImageType], null: true, resolve_each: true
@@ -83,7 +97,7 @@ class ProductType < GraphQL::Schema::Object
   end
 end
 
-class QueryType < GraphQL::Schema::Object
+class QueryType < BaseObject
   field :constant, String, null: false, resolve_static: true
 
   def self.constant(_context)
@@ -167,7 +181,7 @@ class QueryType < GraphQL::Schema::Object
   end
 end
 
-class CounterType < GraphQL::Schema::Object
+class CounterType < BaseObject
   field :value, Int, null: false, resolve_each: true
 
   def self.value(object, _context)
@@ -217,7 +231,7 @@ class NoOpMutation < GraphQL::Schema::Mutation
   end
 end
 
-class MutationType < GraphQL::Schema::Object
+class MutationType < BaseObject
   field :increment_counter, mutation: IncrementCounterMutation
   field :counter_loader, mutation: CounterLoaderMutation
   field :no_op, mutation: NoOpMutation

@@ -20,5 +20,5 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
       env:
         GRAPHQL_VERSION: ${{ matrix.graphql_version }}
-        GRAPHQL_FUTURE: ${{ (matrix.graphql_version == '~> 2.0' && matrix.ruby_version == 4.0 && "YES") || "NO" }}
+        GRAPHQL_FUTURE: ${{ (matrix.graphql_version == '~> 2.0' && matrix.ruby_version == 4.0 && 'YES') || 'NO' }}
     - run: bundle exec rake
