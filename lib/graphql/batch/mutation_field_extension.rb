@@ -1,9 +1,13 @@
 module GraphQL::Batch
   class MutationFieldExtension < GraphQL::Schema::FieldExtension
-    def resolve(object:, arguments:, **_rest)
+    def resolve(object: nil, objects: nil, arguments:, **_rest)
       GraphQL::Batch::Executor.current.clear
       begin
-        ::Promise.sync(yield(object, arguments))
+        if !objects.nil?
+          ::Promise.sync(yield(objects, arguments))
+        else
+          ::Promise.sync(yield(object, arguments))
+        end
       ensure
         GraphQL::Batch::Executor.current.clear
       end

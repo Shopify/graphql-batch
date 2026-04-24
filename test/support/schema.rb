@@ -6,27 +6,35 @@ end
 class ProductVariantType < GraphQL::Schema::Object
   field :id, ID, null: false
   field :title, String, null: false
-  field :image_ids, [ID, null: true], null: false
+  field :image_ids, [ID, null: true], null: false, resolve_each: true
 
-  def image_ids
+  def self.image_ids(object, _context)
     AssociationLoader.for(ProductVariant, :images).load(object).then do |images|
       images.map(&:id)
     end
   end
 
-  field :product, GraphQL::Schema::LateBoundType.new('Product'), null: false
+  def image_ids
+    self.class.image_ids(object, context)
+  end
+
+  field :product, GraphQL::Schema::LateBoundType.new('Product'), null: false, resolve_each: true
+
+  def self.product(object, _context)
+    RecordLoader.for(Product).load(object.product_id)
+  end
 
   def product
-    RecordLoader.for(Product).load(object.product_id)
+    self.class.product(object, context)
   end
 end
 
 class ProductType < GraphQL::Schema::Object
   field :id, ID, null: false
   field :title, String, null: false
-  field :images, [ImageType], null: true
+  field :images, [ImageType], null: true, resolve_each: true
 
-  def images
+  def self.images(object, _context)
     product_image_query = RecordLoader.for(Image).load(object.image_id)
     variant_images_query = AssociationLoader.for(Product, :variants).load(object).then do |variants|
       variant_image_queries = variants.map do |variant|
@@ -39,93 +47,145 @@ class ProductType < GraphQL::Schema::Object
     end
   end
 
-  field :non_null_but_raises, String, null: false
+  def images
+    self.class.images(object, context)
+  end
 
-  def non_null_but_raises
+  field :non_null_but_raises, String, null: false, resolve_static: true
+
+  def self.non_null_but_raises(_context)
     raise GraphQL::ExecutionError, 'Error'
   end
 
-  field :variants, [ProductVariantType], null: true
+  def non_null_but_raises
+    self.class.non_null_but_raises(context)
+  end
 
-  def variants
+  field :variants, [ProductVariantType], null: true, resolve_each: true
+
+  def self.variants(object, _context)
     AssociationLoader.for(Product, :variants).load(object)
   end
 
-  field :variants_count, Int, null: true
+  def variants
+    self.class.variants(object, context)
+  end
 
-  def variants_count
+  field :variants_count, Int, null: true, resolve_each: true
+
+  def self.variants_count(object, _context)
     query = AssociationLoader.for(Product, :variants).load(object)
     Promise.all([query]).then { query.value.size }
+  end
+
+  def variants_count
+    self.class.variants_count(object, context)
   end
 end
 
 class QueryType < GraphQL::Schema::Object
-  field :constant, String, null: false
+  field :constant, String, null: false, resolve_static: true
 
-  def constant
+  def self.constant(_context)
     "constant value"
   end
 
-  field :load_execution_error, String, null: true
+  def constant
+    self.class.constant(context)
+  end
 
-  def load_execution_error
+  field :load_execution_error, String, null: true, resolve_static: true
+
+  def self.load_execution_error(_context)
     RecordLoader.for(Product).load(1).then do |product|
       raise GraphQL::ExecutionError, "test error message"
     end
   end
 
-  field :non_null_but_raises, ProductType, null: false
+  def load_execution_error
+    self.class.load_execution_error(context)
+  end
 
-  def non_null_but_raises
+  field :non_null_but_raises, ProductType, null: false, resolve_static: true
+
+  def self.non_null_but_raises(_context)
     raise GraphQL::ExecutionError, 'Error'
   end
 
-  field :non_null_but_promise_raises, String, null: false
+  def non_null_but_raises
+    self.class.non_null_but_raises(context)
+  end
 
-  def non_null_but_promise_raises
+  field :non_null_but_promise_raises, String, null: false, resolve_static: true
+
+  def self.non_null_but_promise_raises(_context)
     NilLoader.load.then do
       raise GraphQL::ExecutionError, 'Error'
     end
   end
 
-  field :product, ProductType, null: true do
+  def non_null_but_promise_raises
+    self.class.non_null_but_promise_raises(context)
+  end
+
+  field :product, ProductType, null: true, resolve_static: true do
     argument :id, ID, required: true
   end
 
-  def product(id:)
+  def self.product(_context, id:)
     RecordLoader.for(Product).load(id)
   end
 
-  field :products, [ProductType], null: true do
+  def product(id:)
+    self.class.product(context, id: id)
+  end
+
+  field :products, [ProductType], null: true, resolve_static: true do
     argument :first, Int, required: true
   end
 
-  def products(first:)
+  def self.products(_context, first:)
     Product.first(first)
   end
 
-  field :product_variants_count, Int, null: true do
+  def products(first:)
+    self.class.products(context, first: first)
+  end
+
+  field :product_variants_count, Int, null: true, resolve_static: true do
     argument :id, ID, required: true
   end
 
-  def product_variants_count(id:)
+  def self.product_variants_count(_context, id:)
     RecordLoader.for(Product).load(id).then do |product|
       AssociationLoader.for(Product, :variants).load(product).then(&:size)
     end
   end
+
+  def product_variants_count(id:)
+    self.class.product_variants_count(context, id: id)
+  end
 end
 
 class CounterType < GraphQL::Schema::Object
-  field :value, Int, null: false
+  field :value, Int, null: false, resolve_each: true
 
-  def value
+  def self.value(object, _context)
     object
   end
 
-  field :load_value, Int, null: false
+  def value
+    self.class.value(object, context)
+  end
+
+  field :load_value, Int, null: false, resolve_static: true
+
+  def self.load_value(context)
+    CounterLoader.load(context[:counter])
+  end
 
   def load_value
-    CounterLoader.load(context[:counter])
+    self.class.load_value(context)
   end
 end
 
